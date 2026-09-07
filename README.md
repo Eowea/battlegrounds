@@ -61,9 +61,12 @@ panneau. Ouvrir les fichiers directement en `file://` fonctionne aussi, mais le 
 
 ## À savoir
 
-- **Un seul lien en dur** vers l'autre site : le bouton « maison » de la barre d'outils,
-  dans `index.html`, pointe vers `https://eowea.github.io/builds/`. Tous les autres liens
-  du header se règlent depuis *Configuration du site → Liens de navigation*.
+- **Le bouton « maison »** de la barre d'outils, dans `index.html`, pointe vers
+  `https://eowea.github.io/battlegrounds/` : il repose la page à zéro, sans carte
+  sélectionnée ni recherche. C'est le seul lien écrit en dur — tous les autres liens du
+  header, y compris un renvoi vers le site des builds, se règlent depuis *Configuration du
+  site → Liens de navigation*. Étant absolu, il renvoie vers le site publié même quand on
+  teste en local.
 - `data.js` conserve quelques réglages qui appartiennent au site des builds
   (`latestVideos`, `patchVideos`, `showHeroRotation`). Ils ne servent pas aux cartes et ne
   sont pas éditables ici, mais le panneau les réenregistre tels quels : rien ne se perd.

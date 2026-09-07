@@ -31,10 +31,11 @@
 </header>
     <section class="panel toolbar">
       <div class="toolbar-row">
-        <!-- Seul lien en dur vers l'autre site : les cartes vivent dans leur propre dépôt,
-             il n'y a donc pas d'index.html des builds à côté. Les autres liens du header
-             se règlent depuis le panneau admin (Configuration du site → Liens de navigation). -->
-        <a href="https://eowea.github.io/builds/" class="home-btn" aria-label="Site des builds" title="Site des builds">
+        <!-- Accueil du site des cartes. Lien absolu vers la racine publiée : il repose la
+             page à zéro, sans carte sélectionnée ni recherche en cours. Les autres liens du
+             header se règlent depuis le panneau admin (Configuration du site → Liens de
+             navigation) — c'est là qu'on ajoute un renvoi vers le site des builds. -->
+        <a href="https://eowea.github.io/battlegrounds/" class="home-btn" aria-label="Accueil" title="Accueil">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
         </a>
         <div class="search-wrap">
