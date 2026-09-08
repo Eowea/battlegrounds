@@ -18,9 +18,12 @@ const BG_DICT = {
   selectPrompt: { fr: "Sélectionne une carte dans la liste.", en: "Select a map from the list." },
   prevVideo: { fr: "Vidéo précédente", en: "Previous video" },
   nextVideo: { fr: "Vidéo suivante", en: "Next video" },
-  hotspotHint: { fr: "clique un point pour le détail", en: "click a marker for details" },
-  closePopup: { fr: "Fermer", en: "Close" },
+  // Deux formulations : au bureau l'infobulle suit le survol, au tactile il faut toucher.
+  hotspotHint: { fr: "survole un point pour le détail", en: "hover a marker for details" },
+  hotspotHintTouch: { fr: "touche un point pour le détail", en: "tap a marker for details" },
 };
+
+const bgTactile = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
 /* =========================================================================
    POINTS D'INTÉRÊT SUR LA MINIMAP
@@ -73,6 +76,7 @@ const bgEls = {
   siteTitle: $bg('siteTitle'), headerNav: $bg('headerNav'), socials: $bg('socials'), siteUpdate: $bg('siteUpdate'),
   langSwitcher: $bg('langSwitcher'), searchInput: $bg('searchInput'), resultsCount: $bg('resultsCount'),
   bgTitle: $bg('bgTitle'), bgNote: $bg('bgNote'), bgList: $bg('bgList'), detailView: $bg('detailView'),
+  tooltipPortal: $bg('tooltipPortal'),
 };
 
 const bgLoc = (val) => (val && typeof val === 'object' && !Array.isArray(val)) ? (val[bgState.lang] !== undefined ? val[bgState.lang] : (val['fr'] || '')) : (val || '');
@@ -271,7 +275,8 @@ function renderBgDetail() {
         `<span class="bg-legend-item" data-type="${k}">${BG_HOTSPOT_TYPES[k].icon}${bgEsc(bgLoc(BG_HOTSPOT_TYPES[k].label))}</span>`
       ).join('')}</div>`
     : '';
-  const legende = `${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}${points.length ? ' · ' + bgEsc(bgT('hotspotHint')) : ''}`;
+  const indication = bgT(bgTactile ? 'hotspotHintTouch' : 'hotspotHint');
+  const legende = `${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}${points.length ? ' · ' + bgEsc(indication) : ''}`;
   const minimapHtml = b.minimapImage
     ? `<section class="bg-minimap-section">
         <div class="bg-minimap-frame">
@@ -316,55 +321,129 @@ function renderBgDetail() {
   bindBgCarousel();
 }
 
-/* ── Popup d'un point de la minimap ───────────────────────────────────────
-   Le contenu est reconstruit à chaque ouverture : la langue a pu changer, et
-   les données sont relues depuis la carte courante plutôt que figées au rendu. */
-function bgOpenHotspot(index) {
+/* ── Infobulle d'un point de la minimap ───────────────────────────────────
+   Même mécanique que les sorts sur la page Builds : un portail fixe posé sur le
+   body, une bulle ancrée au marqueur avec sa flèche, qui bascule au-dessous
+   quand il n'y a plus de place au-dessus. Survol au bureau, tap au tactile.
+   Le contenu est relu depuis la carte courante à chaque ouverture : la langue a
+   pu changer entre-temps. */
+let bgTipTrigger = null;
+let bgTipHideTimer = null;
+let bgTipRaf = 0;
+
+function bgHideHotspotTip(immediat = false) {
+  clearTimeout(bgTipHideTimer);
+  const fermer = () => {
+    bgEls.tooltipPortal.innerHTML = '';
+    bgEls.tooltipPortal.setAttribute('aria-hidden', 'true');
+    bgTipTrigger = null;
+  };
+  // Le petit délai laisse passer un aller-retour de souris entre deux marqueurs
+  // voisins sans faire clignoter la bulle.
+  immediat ? fermer() : (bgTipHideTimer = setTimeout(fermer, 40));
+}
+
+function bgPositionHotspotTip(declencheur, bulle) {
+  if (!declencheur || !bulle) return;
+  const r = declencheur.getBoundingClientRect();
+  const marge = 12;
+  let gauche = r.left + r.width / 2 - bulle.offsetWidth / 2;
+  gauche = Math.max(marge, Math.min(gauche, innerWidth - bulle.offsetWidth - marge));
+  let haut = r.top - bulle.offsetHeight - 10;
+  let placement = 'top';
+  if (haut < marge) { haut = r.bottom + 10; placement = 'bottom'; }
+  haut = Math.max(marge, Math.min(haut, innerHeight - bulle.offsetHeight - marge));
+  // La flèche reste en face du marqueur même quand la bulle a été ramenée dans l'écran.
+  const fleche = Math.max(16, Math.min(r.left + r.width / 2 - gauche, bulle.offsetWidth - 16));
+  bulle.style.left = gauche + 'px';
+  bulle.style.top = haut + 'px';
+  bulle.dataset.placement = placement;
+  bulle.style.setProperty('--arrow-left', fleche + 'px');
+}
+
+function bgQueueHotspotTipPosition() {
+  if (!bgTipTrigger || bgTipRaf) return;
+  bgTipRaf = requestAnimationFrame(() => {
+    bgTipRaf = 0;
+    const bulle = document.getElementById('activeHotspotTip');
+    if (bgTipTrigger && bulle) bgPositionHotspotTip(bgTipTrigger, bulle);
+  });
+}
+
+function bgShowHotspotTip(declencheur) {
+  if (!declencheur) return;
+  clearTimeout(bgTipHideTimer);
+  // Déjà ouverte sur ce marqueur : la reconstruire ferait clignoter l'image.
+  if (bgTipTrigger === declencheur && bgEls.tooltipPortal.getAttribute('aria-hidden') === 'false') return;
+
   const b = bgCurrent();
   if (!b) return;
-  const h = bgHotspotsOf(b)[index];
+  const h = bgHotspotsOf(b)[Number(declencheur.dataset.hotspot)];
   if (!h) return;
-  const overlay = document.getElementById('hotspotOverlay');
-  if (!overlay) return;
+
+  bgTipTrigger = declencheur;
   const t = bgHotspotType(h.type);
   const titre = bgLoc(h.name) || bgLoc(t.label);
   const texte = bgLoc(h.description);
-  overlay.innerHTML = `
-    <div class="hotspot-modal" role="dialog" aria-modal="true" aria-label="${bgEsc(titre)}">
-      <button class="hotspot-close" type="button" aria-label="${bgEsc(bgT('closePopup'))}">✕</button>
-      <div class="hotspot-kind" data-type="${bgEsc(bgHotspotTypeKey(h.type))}">${t.icon}<span>${bgEsc(bgLoc(t.label))}</span></div>
-      <h3 class="hotspot-title">${bgEsc(titre)}</h3>
-      ${h.image ? `<div class="hotspot-shot"><img src="${bgEsc(h.image)}" alt="${bgEsc(titre)}" onerror="this.parentNode.remove()" /></div>` : ''}
-      ${texte ? `<p class="hotspot-desc">${bgEsc(texte)}</p>` : ''}
-    </div>`;
-  overlay.classList.add('active');
-  overlay.querySelector('.hotspot-close').focus();
+  // La capture garde ses proportions : un ratio imposé rognerait un bout d'écran de jeu.
+  const media = h.image
+    ? `<div class="hotspot-shot"><img src="${bgEsc(h.image)}" alt="${bgEsc(titre)}" onerror="this.parentNode.remove()" /></div>`
+    : '';
+
+  bgEls.tooltipPortal.innerHTML =
+    `<div class="floating-tooltip hotspot-tip" id="activeHotspotTip">
+       <div class="hotspot-kind" data-type="${bgEsc(bgHotspotTypeKey(h.type))}">${t.icon}<span>${bgEsc(bgLoc(t.label))}</span></div>
+       <div class="floating-tooltip-title">${bgEsc(titre)}</div>
+       ${texte ? `<div class="floating-tooltip-body">${bgEsc(texte)}</div>` : ''}
+       ${media}
+     </div>`;
+  bgEls.tooltipPortal.setAttribute('aria-hidden', 'false');
+  bgQueueHotspotTipPosition();
+  // Une capture non encore chargée a une hauteur nulle : la bulle serait mal placée.
+  const img = bgEls.tooltipPortal.querySelector('.hotspot-shot img');
+  if (img && !img.complete) img.addEventListener('load', bgQueueHotspotTipPosition, { once: true });
 }
 
-function bgCloseHotspot() {
-  const overlay = document.getElementById('hotspotOverlay');
-  if (!overlay || !overlay.classList.contains('active')) return;
-  overlay.classList.remove('active');
-  overlay.innerHTML = '';
-}
+/* Délégation sur le conteneur de la fiche, qui survit à ses re-rendus. Au tactile il
+   n'y a pas de survol : le tap ouvre, un second tap sur le même point referme. */
+(function bindBgHotspotTips() {
+  const tactile = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+  const zone = bgEls.detailView;
 
-// Délégation sur le conteneur, qui survit aux re-rendus de la fiche.
-bgEls.detailView.addEventListener('click', (e) => {
-  const marqueur = e.target.closest('.bg-hotspot');
-  if (!marqueur) return;
-  bgOpenHotspot(Number(marqueur.dataset.hotspot));
-});
+  if (!tactile) {
+    zone.addEventListener('mouseover', (e) => {
+      const m = e.target.closest('.bg-hotspot');
+      if (m) bgShowHotspotTip(m);
+    });
+    zone.addEventListener('mouseout', (e) => {
+      if (e.target.closest('.bg-hotspot')) bgHideHotspotTip();
+    });
+    zone.addEventListener('focusin', (e) => {
+      const m = e.target.closest('.bg-hotspot');
+      if (m) bgShowHotspotTip(m);
+    });
+    zone.addEventListener('focusout', (e) => {
+      if (e.target.closest('.bg-hotspot')) bgHideHotspotTip();
+    });
+  }
 
-(function bindBgHotspotOverlay() {
-  const overlay = document.getElementById('hotspotOverlay');
-  if (!overlay) return;
-  overlay.addEventListener('click', (e) => {
-    // Un clic sur le fond ferme ; un clic dans la fenêtre ne ferme que sur la croix.
-    if (e.target === overlay || e.target.closest('.hotspot-close')) bgCloseHotspot();
+  zone.addEventListener('click', (e) => {
+    const m = e.target.closest('.bg-hotspot');
+    if (!m) return;
+    e.preventDefault();
+    const dejaOuverte = bgTipTrigger === m && bgEls.tooltipPortal.getAttribute('aria-hidden') === 'false';
+    dejaOuverte ? bgHideHotspotTip(true) : bgShowHotspotTip(m);
+  });
+
+  // Au tactile, un tap ailleurs referme — sinon la bulle resterait collée à l'écran.
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.bg-hotspot')) bgHideHotspotTip(true);
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') bgCloseHotspot();
+    if (e.key === 'Escape') bgHideHotspotTip(true);
   });
+  window.addEventListener('resize', bgQueueHotspotTipPosition);
+  window.addEventListener('scroll', bgQueueHotspotTipPosition, { passive: true, capture: true });
 })();
 
 function renderBgAll() {
@@ -399,7 +478,7 @@ bgEls.langSwitcher.addEventListener('click', (e) => {
   bgState.lang = btn.dataset.lang;
   localStorage.setItem('eowea_lang', bgState.lang);
   // Le popup vit hors de la fiche : sans ça, il resterait ouvert dans l'ancienne langue.
-  bgCloseHotspot();
+  bgHideHotspotTip(true);
   renderBgAll();
 });
 
