@@ -43,6 +43,7 @@
     --card-bg:linear-gradient(180deg,rgba(20,28,44,.8),rgba(12,18,28,.9));
     --card-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 5px 15px rgba(0,0,0,.5);
     --radius:4px;            /* --radius-sm : le site est anguleux, pas arrondi */
+    --hex-clip:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);  /* même hexagone que le site */
   }
   @font-face {
     font-family: 'Metronic for Blizzard';
@@ -228,25 +229,40 @@
   .adm-hotspot[data-type="tour"],     .adm-point-pastille[data-type="tour"]     {--pt-color:#6ec6ff;}
   .adm-hotspot[data-type="fontaine"], .adm-point-pastille[data-type="fontaine"] {--pt-color:#5fd48a;}
   .adm-hotspot[data-type="autre"],    .adm-point-pastille[data-type="autre"]    {--pt-color:var(--blue);}
+  /* Hexagone, comme sur le site. Le liseré est un calque sous le fond plutôt qu'une
+     bordure : clip-path trancherait une bordure sur les diagonales. */
   .adm-hotspot{
     position:absolute;transform:translate(-50%,-50%);
-    width:26px;height:26px;padding:0;line-height:0;
-    display:grid;place-items:center;border-radius:50%;
-    border:2px solid var(--pt-color,var(--blue));background:rgba(8,12,20,.8);
+    width:28px;height:28px;padding:0;line-height:0;
+    display:grid;place-items:center;border:0;background:none;
     color:var(--pt-color,var(--blue));cursor:grab;touch-action:none;
-    box-shadow:0 0 0 2px rgba(0,0,0,.55);transition:transform .12s;
+    filter:drop-shadow(0 0 1px rgba(0,0,0,.9));transition:transform .12s;
   }
-  .adm-hotspot svg{width:14px;height:14px;}
+  .adm-hotspot::before,.adm-hotspot::after{content:'';position:absolute;inset:0;clip-path:var(--hex-clip);}
+  .adm-hotspot::before{background:var(--pt-color,var(--blue));}
+  .adm-hotspot::after{background:rgba(8,12,20,.85);transform:scale(.78);}
+  .adm-hotspot svg{position:relative;z-index:1;width:13px;height:13px;}
   .adm-hotspot:hover{transform:translate(-50%,-50%) scale(1.15);}
-  .adm-hotspot.is-selected{box-shadow:0 0 0 2px #000,0 0 0 4px var(--gold-bright);}
+  /* Point sélectionné : liseré doré, halo, et surtout une taille plus grande — sur un
+     point de type « objectif », déjà doré, la couleur seule ne se verrait pas. */
+  .adm-hotspot.is-selected::before{background:var(--gold-bright);}
+  .adm-hotspot.is-selected{
+    transform:translate(-50%,-50%) scale(1.3);
+    filter:drop-shadow(0 0 2px #000) drop-shadow(0 0 8px var(--gold-glow));
+  }
   .adm-hotspot.dragging{cursor:grabbing;transform:translate(-50%,-50%) scale(1.2);}
 
   .adm-point-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-right:28px;flex-wrap:wrap;}
   .adm-point-pastille{
-    flex:0 0 auto;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;
-    border:2px solid var(--pt-color,var(--blue));color:var(--pt-color,var(--blue));line-height:0;
+    position:relative;flex:0 0 auto;width:26px;height:26px;display:grid;place-items:center;
+    color:var(--pt-color,var(--blue));line-height:0;
   }
-  .adm-point-pastille svg{width:13px;height:13px;}
+  .adm-point-pastille::before,.adm-point-pastille::after{content:'';position:absolute;inset:0;clip-path:var(--hex-clip);}
+  .adm-point-pastille::before{background:var(--pt-color,var(--blue));}
+  /* Même fond que les repères de la carte : le bloc d'édition est sur un dégradé,
+     un aplat de panneau ne s'y fondrait pas. */
+  .adm-point-pastille::after{background:rgba(8,12,20,.85);transform:scale(.78);}
+  .adm-point-pastille svg{position:relative;z-index:1;width:13px;height:13px;}
   .adm-coords{font-size:11px;color:var(--text-dim);font-variant-numeric:tabular-nums;}
   .adm-point.is-selected{border-style:solid;border-color:var(--gold-border);box-shadow:0 0 0 1px var(--gold-soft);}
   details.collapsible.nested > summary{padding:8px 10px;}
