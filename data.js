@@ -419,7 +419,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "champs-eternite",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Champs de l'éternité",
       "en": "Battlefield of Eternity"
@@ -431,11 +431,128 @@ const BATTLEGROUNDS = [
       "en": "Two Immortals fight without end. Helping yours prevail releases an ally that levels the enemy forts."
     },
     "objectives": {
-      "fr": "L'ange Ilarian et le seigneur démon Beleth se livrent un combat sans fin au centre de la carte. Aider le vôtre à l'emporter le libère : il part alors dévaster les bâtiments adverses. L'accompagner vaut mieux que le laisser seul — sa puissance ne remplace pas une équipe.",
-      "en": "The angel Ilarian and the demon lord Beleth are locked in an endless duel at the centre of the map. Helping yours prevail sets it loose on the enemy structures. Escorting it beats leaving it alone — its power does not replace a team."
+      "fr": "L'ange Ilarian et le seigneur démon Beleth se livrent un combat sans fin au centre de la carte. Ils ne se font aucun dégât : c'est aux héros d'abattre celui d'en face. Le premier affrontement démarre à 3:00, et l'Immortel vainqueur part ensuite dévaster les bâtiments adverses, dans la voie la moins endommagée. L'accompagner vaut mieux que le laisser seul — sa puissance ne remplace pas une équipe.",
+      "en": "The angel Ilarian and the demon lord Beleth are locked in an endless duel at the centre of the map. They deal no damage to each other: it falls to the Heroes to bring the opposing one down. The first clash starts at 3:00, and the winning Immortal then walks into the lane with the least structural damage to wreck the enemy's buildings. Escorting it beats leaving it alone — its power does not replace a team."
     },
-    "tips": [],
-    "hotspots": [],
+    "tips": [
+      {
+        "fr": "L'objectif tombe à 3:00, puis 1:45 après la mort du dernier Immortel parti en ligne. Arriver cinq secondes en retard offre 25 % d'avance à l'adversaire ; dix secondes, 50 %.",
+        "en": "The objective starts at 3:00, then 1:45 after the last laning Immortal dies. Showing up five seconds late hands the enemy a 25% lead; ten seconds, 50%."
+      },
+      {
+        "fr": "Les deux Immortels ne se blessent pas entre eux. Seuls les héros peuvent entamer celui d'en face — frapper le vôtre ne sert à rien.",
+        "en": "The two Immortals deal no damage to each other. Only Heroes can bring the opposing one down — hitting your own achieves nothing."
+      },
+      {
+        "fr": "Pendant la phase d'objectif, chaque Immortel porte un bouclier égal à ses points de vie restants : il y a donc deux fois plus à abattre qu'il n'y paraît.",
+        "en": "During the objective phase each Immortal carries a shield equal to its remaining Health: there is twice as much to chew through as the bar suggests."
+      },
+      {
+        "fr": "À 50 % de vie, les Immortels mettent dix secondes à échanger leurs places, et sont intouchables pendant ce temps. C'est la fenêtre pour se replacer, se soigner ou prendre un camp.",
+        "en": "At 50% health the Immortals take ten seconds to swap places, and cannot be damaged meanwhile. That is the window to reposition, heal, or take a camp."
+      },
+      {
+        "fr": "Leurs deux attaques ont 14 secondes de recharge, 16 une fois en ligne : l'une projette et étourdit une demi-seconde, l'autre frappe une zone après deux secondes et étourdit deux secondes. Les deux tuent un serviteur d'un seul coup.",
+        "en": "Their two attacks have a 14-second cooldown, 16 once in a lane: one knocks back and stuns for half a second, the other hits an area after a two-second delay and stuns for two. Both one-shot minions."
+      },
+      {
+        "fr": "Pousser un adversaire sous la zone d'explosion avec une projection cumule les dégâts et l'étourdissement — c'est le meilleur usage des compétences de déplacement sur cette carte.",
+        "en": "Shoving an opponent under the delayed explosion with a knockback stacks the damage and the stun — the best use of displacement abilities on this map."
+      },
+      {
+        "fr": "L'Immortel vainqueur part dans la voie la moins endommagée, et deux globes de régénération apparaissent au centre du champ de bataille.",
+        "en": "The winning Immortal walks into the lane with the least structural damage, and two Regeneration Globes appear at the centre of the battleground."
+      },
+      {
+        "fr": "Prendre le camp de bruisers vers 2:45 le fait arriver avec la vague de serviteurs, juste avant le début de la phase.",
+        "en": "Taking the Bruiser camp around 2:45 lands it with the minion wave, right before the phase begins."
+      },
+      {
+        "fr": "Les camps disparaissent dès que les Immortels entrent en ligne — sauf si des mercenaires y sont déjà engagés — et reviennent à la mort de l'Immortel.",
+        "en": "Camps vanish as soon as the Immortals enter the lanes — unless mercenaries are already fighting there — and come back when the Immortal dies."
+      },
+      {
+        "fr": "L'idole tire deux salves d'orbes glacées toutes les 12 secondes : elles explosent pour 5 % de vie maximale et immobilisent 1,5 seconde. Plonger sur une idole n'est jamais gratuit.",
+        "en": "The Core fires two volleys of Frozen Orbs every 12 seconds: they explode for 5% maximum Health and root for 1.5 seconds. Diving a Core is never free."
+      }
+    ],
+    "hotspots": [
+      {
+        "id": "be1",
+        "type": "objectif",
+        "x": 49.4,
+        "y": 38.2,
+        "name": {
+          "fr": "Beleth, le seigneur démon",
+          "en": "Beleth, the Demon Lord"
+        },
+        "description": {
+          "fr": "L'Immortel de l'équipe du côté démoniaque. Il occupe la plateforme nord de l'arène et bascule au sud à 50 % de vie. Le faire tomber, c'est libérer Ilarian sur une voie.",
+          "en": "The Immortal fighting for the demonic side. He holds the northern platform of the arena and swaps south at 50% health. Bringing him down releases Ilarian into a lane."
+        },
+        "image": "assets/maps/champs-eternite/captures/2.jpg"
+      },
+      {
+        "id": "il1",
+        "type": "objectif",
+        "x": 49.9,
+        "y": 60.6,
+        "name": {
+          "fr": "Ilarian, l'ange",
+          "en": "Ilarian, the Angel"
+        },
+        "description": {
+          "fr": "L'Immortel de l'équipe du côté angélique. Il occupe la plateforme sud et bascule au nord à 50 % de vie. Les deux Immortels se battent sans jamais s'entamer : tout dépend des héros.",
+          "en": "The Immortal fighting for the angelic side. He holds the southern platform and swaps north at 50% health. The two Immortals fight without ever hurting each other: everything rests on the Heroes."
+        },
+        "image": "assets/maps/champs-eternite/captures/1.jpg"
+      },
+      {
+        "id": "ca1",
+        "type": "camp",
+        "x": 36.3,
+        "y": 22.8,
+        "name": {
+          "fr": "Camp de mercenaires — côté angélique",
+          "en": "Mercenary camp — angelic side"
+        },
+        "description": {
+          "fr": "Le champ de bataille compte quatre camps : deux de siège sur les voies du haut et du bas, deux de bruisers en diagonale. Disponibles dès 0:30, ils réapparaissent en 3:00 pour le siège et 4:00 pour les bruisers.",
+          "en": "The battleground has four camps: two Siege on the top and bottom lanes, two Bruiser set diagonally. Available from 0:30, they respawn in 3:00 for Siege and 4:00 for Bruiser."
+        },
+        "image": ""
+      },
+      {
+        "id": "ca2",
+        "type": "camp",
+        "x": 63.3,
+        "y": 75,
+        "name": {
+          "fr": "Camp de mercenaires — côté démoniaque",
+          "en": "Mercenary camp — demonic side"
+        },
+        "description": {
+          "fr": "Le symétrique du camp d'en face. Les bruisers infligent 100 % de dégâts supplémentaires aux serviteurs et aux structures ; les impaleurs du camp de siège frappent les bâtiments sans entrer à leur portée.",
+          "en": "The mirror of the camp opposite. Bruisers deal 100% bonus damage to minions and structures; the Siege camp Impalers hit buildings without walking into their range."
+        },
+        "image": "assets/maps/champs-eternite/captures/5.jpg"
+      },
+      {
+        "id": "fo1",
+        "type": "fontaine",
+        "x": 26.4,
+        "y": 14.4,
+        "name": {
+          "fr": "Fontaine de soins — côté angélique",
+          "en": "Healing fountain — angelic side"
+        },
+        "description": {
+          "fr": "Deux minutes de recharge. Sur une carte où la phase d'objectif revient toutes les 1:45, savoir si la fontaine est disponible pèse autant que les points de vie restants.",
+          "en": "Two-minute cooldown. On a map where the objective comes back every 1:45, knowing whether the fountain is up matters as much as the health bars."
+        },
+        "image": ""
+      }
+    ],
     "guideVideos": []
   },
   {
