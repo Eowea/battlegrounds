@@ -205,7 +205,7 @@ const BATTLEGROUNDS = [
       "fr": "Mine Hantée",
       "en": "Haunted Mines"
     },
-    "image": "assets/maps/minimap/map_mines.jpg",
+    "image": "assets/maps/mine-hantee/portrait.jpg",
     "minimapImage": "assets/maps/minimap/map_mines.jpg",
     "headline": {
       "fr": "Deux lignes en surface, une mine ouverte en permanence en dessous. La première équipe à y ramasser 55 crânes maudits déclenche les golems sépulcraux.",

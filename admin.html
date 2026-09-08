@@ -1906,6 +1906,8 @@ function classifyAssetPath(path){
   let sub = 'Autre';
   if (lower.includes('minimap')) sub = 'Minimap';
   else if (lower.includes('portrait') || lower.includes('vignette')) sub = 'Vignettes';
+  else if (lower.includes('capture') || lower.includes('screenshot')) sub = 'Captures';
+  else if (lower.includes('objectif') || lower.includes('objective')) sub = 'Objectifs';
   else if (lower.includes('merc') || lower.includes('camp')) sub = 'Camps';
 
   // Regroupement par carte : un segment du chemin, ou le nom du fichier sans extension,
@@ -1957,7 +1959,7 @@ function renderAssetGrid(kind){
     (nested[group][sub] = nested[group][sub] || []).push(item);
   });
 
-  const subOrder = ['Vignettes', 'Minimap', 'Camps'];
+  const subOrder = ['Vignettes', 'Minimap', 'Objectifs', 'Captures', 'Camps'];
   const carteCourante = (assetPickerMapIndex !== null && BATTLEGROUNDS && BATTLEGROUNDS[assetPickerMapIndex])
     ? '🗺 ' + (BATTLEGROUNDS[assetPickerMapIndex].name?.fr || BATTLEGROUNDS[assetPickerMapIndex].id)
     : null;
