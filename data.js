@@ -4,7 +4,9 @@
 
   STREAMER_CONFIG : réglages communs du site (titre, réseaux, liens de navigation,
                     date de mise à jour, journal des changements, mesure d'audience).
-  BATTLEGROUNDS   : la liste des cartes.
+  BATTLEGROUNDS   : la liste des cartes. Chaque carte porte ses "hotspots" : les points
+                    cliquables posés sur la minimap, en pourcentage de sa largeur et de
+                    sa hauteur, pour qu'ils suivent l'image à toutes les tailles d'écran.
 */
 
 const STREAMER_CONFIG = {
@@ -247,30 +249,6 @@ const BATTLEGROUNDS = [
         "en": "The mine is full of impassable terrain. Crowd control and mobility Abilities are worth far more down there than above ground — for both teams."
       }
     ],
-    "mercenaryCamps": [
-      {
-        "image": "",
-        "name": {
-          "fr": "Camp de sapeurs",
-          "en": "Sapper Camp"
-        },
-        "description": {
-          "fr": "Un au centre de chaque ligne. Trois sapeurs qui foncent sur la première structure venue et explosent dessus. Disponible à 0:30, réapparaît 2:30 après avoir été pris. Un étourdissement, un silence ou une projection suffit à interrompre leur course.",
-          "en": "One in the middle of each lane. Three Sappers that sprint at the nearest structure and explode on it. Available at 0:30, respawns 2:30 after being taken. A stun, a silence or a knockback is enough to stop their run."
-        }
-      },
-      {
-        "image": "",
-        "name": {
-          "fr": "Camp de géants de siège",
-          "en": "Siege Camp"
-        },
-        "description": {
-          "fr": "À gauche de la ligne du haut et à droite de la ligne du bas. Deux géants qui lancent des rochers esquivables et infligent 100 % de dégâts supplémentaires aux structures, sans avoir besoin de s'en approcher. Disponible à 0:30, réapparaît 3:00 après avoir été pris.",
-          "en": "Left side of the top lane, right side of the bottom lane. Two Siege Giants that throw dodgeable boulders and deal 100% bonus damage to structures, without having to close in. Available at 0:30, respawns 3:00 after being taken."
-        }
-      }
-    ],
     "guideVideos": [
       {
         "title": {
@@ -278,6 +256,38 @@ const BATTLEGROUNDS = [
           "en": "COMPLETE GUIDE: Haunted Mines"
         },
         "youtubeId": "https://youtu.be/6LcTtaws0yk"
+      }
+    ],
+    "hotspots": [
+      {
+        "id": "p1",
+        "type": "camp",
+        "x": 16,
+        "y": 37.5,
+        "name": {
+          "fr": "Camp de sapeurs",
+          "en": "Sapper Camp"
+        },
+        "description": {
+          "fr": "Un au centre de chaque ligne. Trois sapeurs qui foncent sur la première structure venue et explosent dessus. Disponible à 0:30, réapparaît 2:30 après avoir été pris. Un étourdissement, un silence ou une projection suffit à interrompre leur course.",
+          "en": "One in the middle of each lane. Three Sappers that sprint at the nearest structure and explode on it. Available at 0:30, respawns 2:30 after being taken. A stun, a silence or a knockback is enough to stop their run."
+        },
+        "image": ""
+      },
+      {
+        "id": "p2",
+        "type": "camp",
+        "x": 16,
+        "y": 65.5,
+        "name": {
+          "fr": "Camp de géants de siège",
+          "en": "Siege Camp"
+        },
+        "description": {
+          "fr": "À gauche de la ligne du haut et à droite de la ligne du bas. Deux géants qui lancent des rochers esquivables et infligent 100 % de dégâts supplémentaires aux structures, sans avoir besoin de s'en approcher. Disponible à 0:30, réapparaît 3:00 après avoir été pris.",
+          "en": "Left side of the top lane, right side of the bottom lane. Two Siege Giants that throw dodgeable boulders and deal 100% bonus damage to structures, without having to close in. Available at 0:30, respawns 3:00 after being taken."
+        },
+        "image": ""
       }
     ]
   }

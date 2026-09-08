@@ -692,19 +692,27 @@
       margin-bottom: 24px;
       text-align: center;
     }
+    /* Simple conteneur de centrage : c'est la scène, en dessous, qui porte le cadre.
+       Les points d'intérêt sont posés en pourcentage ; si le cadre était plus large
+       que l'image (letterbox d'un object-fit), ils tomberaient tous à côté. */
     .bg-minimap-frame {
+      line-height: 0;
+    }
+    .bg-minimap-stage {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
       border: 1px solid var(--blue-border);
       border-radius: var(--radius-sm);
       overflow: hidden;
       background: #000;
       box-shadow: var(--shadow);
     }
-    .bg-minimap-frame img {
+    .bg-minimap-stage img {
       display: block;
-      width: 100%;
+      width: auto;
+      max-width: 100%;
       max-height: 520px;
-      object-fit: contain;
-      margin: 0 auto;
     }
     .bg-minimap-caption {
       margin-top: 8px;
@@ -2038,4 +2046,188 @@
 @media (max-width: 640px) {
     .changelog-modal { padding: 18px 16px 20px; max-height: 82vh; }
     .changelog-title { font-size: 17px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   POINTS D'INTÉRÊT SUR LA MINIMAP (page Cartes)
+   Chaque point est positionné en pourcentage de la scène, qui épouse l'image :
+   il suit donc la minimap à toutes les tailles d'écran, sans recalcul en script.
+   La couleur vient d'une variable posée par [data-type], partagée par le
+   marqueur, la légende et l'en-tête du popup.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.bg-hotspot[data-type="camp"],
+.bg-legend-item[data-type="camp"],
+.hotspot-kind[data-type="camp"]         { --pt-color: #ff9f43; --pt-glow: rgba(255, 159, 67, .45); }
+
+.bg-hotspot[data-type="objectif"],
+.bg-legend-item[data-type="objectif"],
+.hotspot-kind[data-type="objectif"]     { --pt-color: var(--gold-bright); --pt-glow: var(--gold-glow); }
+
+.bg-hotspot[data-type="tour"],
+.bg-legend-item[data-type="tour"],
+.hotspot-kind[data-type="tour"]         { --pt-color: #6ec6ff; --pt-glow: rgba(110, 198, 255, .45); }
+
+.bg-hotspot[data-type="fontaine"],
+.bg-legend-item[data-type="fontaine"],
+.hotspot-kind[data-type="fontaine"]     { --pt-color: #5fd48a; --pt-glow: rgba(95, 212, 138, .45); }
+
+.bg-hotspot[data-type="autre"],
+.bg-legend-item[data-type="autre"],
+.hotspot-kind[data-type="autre"]        { --pt-color: var(--blue); --pt-glow: var(--blue-glow); }
+
+.bg-hotspot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    line-height: 0;
+    border-radius: 50%;
+    border: 2px solid var(--pt-color, var(--blue));
+    background: rgba(8, 12, 20, .78);
+    color: var(--pt-color, var(--blue));
+    cursor: pointer;
+    animation: bg-hotspot-pulse 2.4s ease-in-out infinite;
+    transition: transform var(--t), background var(--t), color var(--t);
+}
+
+.bg-hotspot svg { width: 16px; height: 16px; }
+
+.bg-hotspot:hover,
+.bg-hotspot:focus-visible {
+    /* L'animation reposerait son propre box-shadow par-dessus celui du survol. */
+    animation: none;
+    outline: none;
+    transform: translate(-50%, -50%) scale(1.18);
+    background: var(--pt-color, var(--blue));
+    color: #08090c;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, .5), 0 0 20px var(--pt-glow, var(--blue-glow));
+}
+
+@keyframes bg-hotspot-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(0, 0, 0, .45), 0 0 7px var(--pt-glow, var(--blue-glow)); }
+    50%      { box-shadow: 0 0 0 2px rgba(0, 0, 0, .45), 0 0 17px var(--pt-glow, var(--blue-glow)); }
+}
+
+/* Un visiteur qui a demandé moins d'animation garde les pastilles, sans le battement. */
+@media (prefers-reduced-motion: reduce) {
+    .bg-hotspot { animation: none; box-shadow: 0 0 0 2px rgba(0, 0, 0, .45), 0 0 10px var(--pt-glow, var(--blue-glow)); }
+}
+
+/* ── Légende : seuls les types réellement posés sur la carte y figurent ── */
+.bg-hotspot-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 18px;
+    margin-top: 10px;
+}
+.bg-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.bg-legend-item svg { width: 14px; height: 14px; color: var(--pt-color, var(--blue)); }
+
+/* ── Popup du point ── */
+.hotspot-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    padding: 20px;
+    place-items: center;
+    background: rgba(8, 12, 20, .92);
+    backdrop-filter: blur(10px);
+}
+.hotspot-overlay.active { display: grid; }
+
+.hotspot-modal {
+    position: relative;
+    z-index: 2;
+    width: min(560px, 94vw);
+    max-height: 86vh;
+    overflow-y: auto;
+    text-align: left;
+    padding: 22px 24px 24px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--blue-border);
+    background: linear-gradient(180deg, rgba(20, 28, 44, .96), rgba(12, 18, 28, .98));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 20px 60px rgba(0, 0, 0, .95);
+}
+
+.hotspot-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    border-radius: 50%;
+    border: 1px solid var(--blue-border);
+    background: rgba(8, 12, 20, .75);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all var(--t);
+}
+.hotspot-close:hover { color: var(--gold-bright); border-color: var(--gold-border); }
+
+.hotspot-kind {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--pt-color, var(--blue));
+}
+.hotspot-kind svg { width: 14px; height: 14px; }
+
+.hotspot-title {
+    margin: 8px 40px 14px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--gold-dim);
+    color: var(--gold-bright);
+    font-family: 'Metronic for Blizzard', 'Rajdhani', sans-serif;
+    font-size: 19px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    text-shadow: 0 0 10px var(--gold-glow);
+}
+
+.hotspot-shot {
+    margin-bottom: 14px;
+    border: 1px solid var(--blue-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: #000;
+    line-height: 0;
+}
+.hotspot-shot img { display: block; width: 100%; height: auto; }
+
+.hotspot-desc {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+/* La carte des vidéos occupe seule sa rangée depuis que les camps sont passés
+   en points : sans ça elle garderait la demi-largeur de .meta-grid. */
+.meta-grid.one-col { grid-template-columns: minmax(0, 1fr); }
+
+@media (max-width: 640px) {
+    .bg-hotspot { width: 26px; height: 26px; }
+    .bg-hotspot svg { width: 14px; height: 14px; }
+    .hotspot-modal { padding: 18px 16px 20px; }
+    .hotspot-title { font-size: 16px; }
 }

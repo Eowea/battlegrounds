@@ -11,16 +11,52 @@ const BG_DICT = {
   bgNote: { fr: "Choisis une carte dans la liste, ou utilise la recherche ci-dessus.", en: "Choose a map from the list, or use the search above." },
   objectives: { fr: "Objectif de la carte", en: "Map Objective" },
   tips: { fr: "Conseils", en: "Tips" },
-  camps: { fr: "Camps de mercenaires", en: "Mercenary Camps" },
   guideVideos: { fr: "Vidéos guide", en: "Guide Videos" },
   minimap: { fr: "Minimap", en: "Minimap" },
   noVideosYet: { fr: "Aucune vidéo pour le moment.", en: "No videos yet." },
   noTipsYet: { fr: "Aucun conseil pour le moment.", en: "No tips yet." },
-  noCampsYet: { fr: "Aucun camp renseigné pour le moment.", en: "No mercenary camps listed yet." },
   selectPrompt: { fr: "Sélectionne une carte dans la liste.", en: "Select a map from the list." },
   prevVideo: { fr: "Vidéo précédente", en: "Previous video" },
   nextVideo: { fr: "Vidéo suivante", en: "Next video" },
+  hotspotHint: { fr: "clique un point pour le détail", en: "click a marker for details" },
+  closePopup: { fr: "Fermer", en: "Close" },
 };
+
+/* =========================================================================
+   POINTS D'INTÉRÊT SUR LA MINIMAP
+   Chaque point est posé en pourcentage de la largeur et de la hauteur de l'image :
+   il suit donc la minimap quelle que soit la taille de l'écran, sans recalcul.
+   Le type ne sert qu'à l'affichage — pastille, couleur, légende.
+   ========================================================================= */
+const BG_HOTSPOT_TYPES = {
+  camp: {
+    label: { fr: "Camp de mercenaires", en: "Mercenary camp" },
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3 20h18L12 4z"/><path d="M12 4v16"/></svg>',
+  },
+  objectif: {
+    label: { fr: "Objectif", en: "Objective" },
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>',
+  },
+  tour: {
+    label: { fr: "Tour de guet", en: "Watch tower" },
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/></svg>',
+  },
+  fontaine: {
+    label: { fr: "Fontaine de soins", en: "Healing fountain" },
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
+  },
+  autre: {
+    label: { fr: "Autre", en: "Other" },
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 16.5v-5"/><path d="M12 8h.01"/></svg>',
+  },
+};
+// Un type inconnu (donnée écrite à la main, type retiré plus tard) retombe sur "autre"
+// plutôt que de casser le rendu de toute la fiche.
+const bgHotspotType = (cle) => BG_HOTSPOT_TYPES[cle] || BG_HOTSPOT_TYPES.autre;
+const bgHotspotTypeKey = (cle) => (BG_HOTSPOT_TYPES[cle] ? cle : 'autre');
+// Une position hors de l'image, ou absente, sortirait le point de la minimap.
+const bgHotspotsOf = (b) => (b && Array.isArray(b.hotspots) ? b.hotspots : [])
+  .filter(h => h && Number.isFinite(h.x) && Number.isFinite(h.y));
 
 /* ── Utilities (copie autonome des helpers d'app.js, page indépendante) ── */
 const getInitialLangBg = () => {
@@ -215,21 +251,37 @@ function renderBgDetail() {
   const tipsHtml = (b.tips||[]).length
     ? `<ul class="bullet-list">${b.tips.map(tip=>`<li>${bgEsc(bgLoc(tip))}</li>`).join('')}</ul>`
     : `<p>${bgEsc(bgT('noTipsYet'))}</p>`;
-  const campsHtml = (b.mercenaryCamps||[]).length
-    ? `<ul class="camp-list">${b.mercenaryCamps.map(c=>`
-        <li class="camp-item">
-          ${c.image ? `<div class="camp-icon"><img src="${bgEsc(c.image)}" alt="${bgEsc(bgLoc(c.name))}" loading="lazy" onerror="this.parentNode.style.visibility='hidden'" /></div>` : ''}
-          <div class="camp-text"><strong>${bgEsc(bgLoc(c.name))}</strong> — ${bgEsc(bgLoc(c.description))}</div>
-        </li>`).join('')}</ul>`
-    : `<p>${bgEsc(bgT('noCampsYet'))}</p>`;
   const videoMarkup = bgBuildYoutubeCarouselMarkup(b.guideVideos);
   const videoSectionHtml = videoMarkup
     ? `<section class="guide-video-section">${videoMarkup}</section>`
     : `<div class="empty-state">${bgT('noVideosYet')}</div>`;
+
+  const points = bgHotspotsOf(b);
+  const marqueursHtml = points.map((h, i) => {
+    const t = bgHotspotType(h.type);
+    const titre = bgLoc(h.name) || bgLoc(t.label);
+    return `<button class="bg-hotspot" type="button" data-hotspot="${i}" data-type="${bgEsc(bgHotspotTypeKey(h.type))}"
+        style="left:${h.x}%;top:${h.y}%" title="${bgEsc(titre)}" aria-label="${bgEsc(titre)}">${t.icon}</button>`;
+  }).join('');
+  // La légende ne montre que les types réellement posés sur cette carte : une entrée
+  // "Fontaine de soins" sur une carte qui n'en a pas ne renseignerait personne.
+  const typesPresents = [...new Set(points.map(h => bgHotspotTypeKey(h.type)))];
+  const legendeHtml = typesPresents.length
+    ? `<div class="bg-hotspot-legend">${typesPresents.map(k =>
+        `<span class="bg-legend-item" data-type="${k}">${BG_HOTSPOT_TYPES[k].icon}${bgEsc(bgLoc(BG_HOTSPOT_TYPES[k].label))}</span>`
+      ).join('')}</div>`
+    : '';
+  const legende = `${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}${points.length ? ' · ' + bgEsc(bgT('hotspotHint')) : ''}`;
   const minimapHtml = b.minimapImage
     ? `<section class="bg-minimap-section">
-        <div class="bg-minimap-frame"><img src="${bgEsc(b.minimapImage)}" alt="${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}" loading="lazy" /></div>
-        <div class="bg-minimap-caption">${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}</div>
+        <div class="bg-minimap-frame">
+          <div class="bg-minimap-stage">
+            <img src="${bgEsc(b.minimapImage)}" alt="${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}" />
+            ${marqueursHtml}
+          </div>
+        </div>
+        <div class="bg-minimap-caption">${legende}</div>
+        ${legendeHtml}
       </section>`
     : '';
 
@@ -254,11 +306,7 @@ function renderBgDetail() {
         <div class="card-body">${tipsHtml}</div>
       </article>
     </section>
-    <section class="meta-grid">
-      <article class="card">
-        <div class="card-head">${bgT('camps')}</div>
-        <div class="card-body">${campsHtml}</div>
-      </article>
+    <section class="meta-grid one-col">
       <article class="card">
         <div class="card-head">${bgT('guideVideos')}</div>
         <div class="card-body">${videoSectionHtml}</div>
@@ -267,6 +315,57 @@ function renderBgDetail() {
   `;
   bindBgCarousel();
 }
+
+/* ── Popup d'un point de la minimap ───────────────────────────────────────
+   Le contenu est reconstruit à chaque ouverture : la langue a pu changer, et
+   les données sont relues depuis la carte courante plutôt que figées au rendu. */
+function bgOpenHotspot(index) {
+  const b = bgCurrent();
+  if (!b) return;
+  const h = bgHotspotsOf(b)[index];
+  if (!h) return;
+  const overlay = document.getElementById('hotspotOverlay');
+  if (!overlay) return;
+  const t = bgHotspotType(h.type);
+  const titre = bgLoc(h.name) || bgLoc(t.label);
+  const texte = bgLoc(h.description);
+  overlay.innerHTML = `
+    <div class="hotspot-modal" role="dialog" aria-modal="true" aria-label="${bgEsc(titre)}">
+      <button class="hotspot-close" type="button" aria-label="${bgEsc(bgT('closePopup'))}">✕</button>
+      <div class="hotspot-kind" data-type="${bgEsc(bgHotspotTypeKey(h.type))}">${t.icon}<span>${bgEsc(bgLoc(t.label))}</span></div>
+      <h3 class="hotspot-title">${bgEsc(titre)}</h3>
+      ${h.image ? `<div class="hotspot-shot"><img src="${bgEsc(h.image)}" alt="${bgEsc(titre)}" onerror="this.parentNode.remove()" /></div>` : ''}
+      ${texte ? `<p class="hotspot-desc">${bgEsc(texte)}</p>` : ''}
+    </div>`;
+  overlay.classList.add('active');
+  overlay.querySelector('.hotspot-close').focus();
+}
+
+function bgCloseHotspot() {
+  const overlay = document.getElementById('hotspotOverlay');
+  if (!overlay || !overlay.classList.contains('active')) return;
+  overlay.classList.remove('active');
+  overlay.innerHTML = '';
+}
+
+// Délégation sur le conteneur, qui survit aux re-rendus de la fiche.
+bgEls.detailView.addEventListener('click', (e) => {
+  const marqueur = e.target.closest('.bg-hotspot');
+  if (!marqueur) return;
+  bgOpenHotspot(Number(marqueur.dataset.hotspot));
+});
+
+(function bindBgHotspotOverlay() {
+  const overlay = document.getElementById('hotspotOverlay');
+  if (!overlay) return;
+  overlay.addEventListener('click', (e) => {
+    // Un clic sur le fond ferme ; un clic dans la fenêtre ne ferme que sur la croix.
+    if (e.target === overlay || e.target.closest('.hotspot-close')) bgCloseHotspot();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') bgCloseHotspot();
+  });
+})();
 
 function renderBgAll() {
   document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === bgState.lang));
@@ -299,6 +398,8 @@ bgEls.langSwitcher.addEventListener('click', (e) => {
   if (!btn) return;
   bgState.lang = btn.dataset.lang;
   localStorage.setItem('eowea_lang', bgState.lang);
+  // Le popup vit hors de la fiche : sans ça, il resterait ouvert dans l'ancienne langue.
+  bgCloseHotspot();
   renderBgAll();
 });
 
