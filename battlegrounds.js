@@ -9,7 +9,7 @@ const BG_DICT = {
   emptyList: { fr: "Aucune carte trouvée.", en: "No maps found." },
   bgTitle: { fr: "Cartes", en: "Battlegrounds" },
   bgNote: { fr: "Choisis une carte dans la liste, ou utilise la recherche ci-dessus.", en: "Choose a map from the list, or use the search above." },
-  objectives: { fr: "Objectif de la carte", en: "Map Objective" },
+  objectives: { fr: "Résumé de la carte", en: "Map Summary" },
   tips: { fr: "Conseils", en: "Tips" },
   guideVideos: { fr: "Vidéos guide", en: "Guide Videos" },
   minimap: { fr: "Minimap", en: "Minimap" },
@@ -307,14 +307,17 @@ function renderBgDetail() {
         <div class="card-body"><p>${bgEsc(bgLoc(b.objectives))}</p></div>
       </article>
       <article class="card">
-        <div class="card-head">${bgT('tips')}</div>
-        <div class="card-body">${tipsHtml}</div>
-      </article>
-    </section>
-    <section class="meta-grid one-col">
-      <article class="card">
         <div class="card-head">${bgT('guideVideos')}</div>
         <div class="card-body">${videoSectionHtml}</div>
+      </article>
+    </section>
+    <!-- Les conseils occupent seuls leur rangée : c'est la carte dont la longueur varie
+         le plus, et à côté du résumé elle l'étirait pour rien. Sur toute la largeur,
+         la liste passe sur deux colonnes plutôt que de s'allonger. -->
+    <section class="meta-grid one-col">
+      <article class="card tips-card">
+        <div class="card-head">${bgT('tips')}</div>
+        <div class="card-body">${tipsHtml}</div>
       </article>
     </section>
   `;

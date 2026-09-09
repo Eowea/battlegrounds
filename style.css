@@ -730,6 +730,9 @@
       margin-bottom: 24px;
       width: 100%;
       min-width: 0;
+      /* Chaque carte garde sa hauteur propre. Étirées, les deux partageaient le bas :
+         une voisine longue creusait un grand vide dans la plus courte. */
+      align-items: start;
     }
 
     .card {
@@ -2189,9 +2192,25 @@
    aux sorts. Les navigateurs sans :has gardent simplement la largeur de base. */
 .hotspot-tip:has(.hotspot-shot) { width: min(400px, calc(100vw - 24px)); }
 
-/* La carte des vidéos occupe seule sa rangée depuis que les camps sont passés
-   en points : sans ça elle garderait la demi-largeur de .meta-grid. */
+/* Une carte seule sur sa rangée : sans ça elle garderait la demi-largeur de .meta-grid. */
 .meta-grid.one-col { grid-template-columns: minmax(0, 1fr); }
+
+/* Les conseils sont le contenu dont la longueur varie le plus. Sur toute la largeur,
+   une liste d'une seule colonne donnerait des lignes trop longues à lire et une carte
+   inutilement haute : on la répartit sur deux colonnes. */
+.tips-card .bullet-list {
+    display: block;
+    columns: 2;
+    column-gap: 34px;
+}
+.tips-card .bullet-list li {
+    /* Un conseil coupé en deux d'une colonne à l'autre serait illisible. */
+    break-inside: avoid;
+    margin-bottom: 10px;
+}
+@media (max-width: 640px) {
+    .tips-card .bullet-list { columns: 1; }
+}
 
 @media (max-width: 640px) {
     .bg-hotspot { width: 28px; height: 28px; }

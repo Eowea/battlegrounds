@@ -1477,15 +1477,15 @@ function renderInfosTab(bg){
         </div>
       </div>
       <div class="row">
-        <div class="field"><label>Résumé (FR)</label><textarea oninput="setNested(BATTLEGROUNDS[${i}],'headline.fr',this.value)">${escapeHtml(bg.headline?.fr)}</textarea></div>
-        <div class="field"><label>Résumé (EN)</label><textarea oninput="setNested(BATTLEGROUNDS[${i}],'headline.en',this.value)">${escapeHtml(bg.headline?.en)}</textarea></div>
+        <div class="field"><label>Accroche (FR)</label><textarea oninput="setNested(BATTLEGROUNDS[${i}],'headline.fr',this.value)">${escapeHtml(bg.headline?.fr)}</textarea></div>
+        <div class="field"><label>Accroche (EN)</label><textarea oninput="setNested(BATTLEGROUNDS[${i}],'headline.en',this.value)">${escapeHtml(bg.headline?.en)}</textarea></div>
       </div>
-      <small class="help" style="margin-top:-8px;margin-bottom:12px;">Phrase affichée sous le nom de la carte, en haut de sa fiche.</small>
+      <small class="help" style="margin-top:-8px;margin-bottom:12px;">Phrase affichée sous le nom de la carte, en haut de sa fiche. Même nom que sur les fiches de héros du site Builds.</small>
       <div class="row">
-        <div class="field"><label>Objectif (FR)</label><textarea oninput="setNested(BATTLEGROUNDS[${i}],'objectives.fr',this.value)">${escapeHtml(bg.objectives?.fr)}</textarea></div>
-        <div class="field"><label>Objectif (EN)</label><textarea oninput="setNested(BATTLEGROUNDS[${i}],'objectives.en',this.value)">${escapeHtml(bg.objectives?.en)}</textarea></div>
+        <div class="field"><label>Résumé (FR)</label><textarea oninput="setNested(BATTLEGROUNDS[${i}],'objectives.fr',this.value)">${escapeHtml(bg.objectives?.fr)}</textarea></div>
+        <div class="field"><label>Résumé (EN)</label><textarea oninput="setNested(BATTLEGROUNDS[${i}],'objectives.en',this.value)">${escapeHtml(bg.objectives?.en)}</textarea></div>
       </div>
-      <small class="help" style="margin-top:-8px;">Contenu de la carte « Objectif de la carte » sur la fiche.</small>
+      <small class="help" style="margin-top:-8px;">Contenu de la carte « Résumé de la carte » sur la fiche. Le déroulé et les chiffres — ce qui n'a pas de place sur la minimap.</small>
     </div>
   `;
 }
