@@ -488,14 +488,20 @@
    CONFIGURATION DU DEPOT
    ========================================================================= */
 const REPO_OPTIONS = [
-  { owner:'Eowea', name:'battlegrounds', label:'Eowea/battlegrounds', siteUrl:'https://eowea.github.io/battlegrounds/' },
+  { owner:'Eowea', name:'maps', label:'Eowea/maps', siteUrl:'https://eowea.github.io/maps/' },
 ];
 let REPO_OWNER = localStorage.getItem('eowea_bg_admin_repo_owner') || 'Eowea';
-let REPO_NAME  = localStorage.getItem('eowea_bg_admin_repo_name') || 'battlegrounds';
+let REPO_NAME  = localStorage.getItem('eowea_bg_admin_repo_name') || 'maps';
+// Le dépôt s'appelait « battlegrounds ». Un navigateur qui a déjà servi garde l'ancien
+// nom en mémoire et viserait une adresse morte : on le corrige une fois pour toutes.
+if (REPO_NAME === 'battlegrounds'){
+  REPO_NAME = 'maps';
+  localStorage.setItem('eowea_bg_admin_repo_name', REPO_NAME);
+}
 const BRANCH     = 'main';
 const GITHUB_API = 'https://api.github.com';
 // Le depot de reference sur lequel un compte "editeur" reste cantonne.
-const REPO_DEFAUT = { owner:'Eowea', name:'battlegrounds' };
+const REPO_DEFAUT = { owner:'Eowea', name:'maps' };
 
 /* =========================================================================
    ETAT GLOBAL
@@ -552,7 +558,7 @@ let dirtyConfigTouched = false;
 const TAB_LABELS = { infos: 'Informations', points: 'Points d\'intérêt', tips: 'Conseils', videos: 'Vidéos guide' };
 
 /* Types de points posés sur la minimap. Doit rester aligné sur BG_HOTSPOT_TYPES
-   dans battlegrounds.js : c'est ce fichier-là qui les affiche sur le site. */
+   dans maps.js : c'est ce fichier-là qui les affiche sur le site. */
 const HOTSPOT_TYPES = {
   camp:     { label: 'Camp de mercenaires', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3 20h18L12 4z"/><path d="M12 4v16"/></svg>' },
   objectif: { label: 'Objectif',            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>' },
