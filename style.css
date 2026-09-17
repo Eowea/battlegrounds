@@ -2467,3 +2467,15 @@
     .bg-map-row .bg-hotspot svg { width: 15px; height: 15px; }
     .bg-map-row .point-shot { display: block; }
 }
+
+/* Bandeau et légende sous la carte agrandie : les repères y sont de plusieurs couleurs,
+   sans légende on ne sait pas ce qu'on regarde. La hauteur maximale de l'image baisse
+   d'autant, pour que l'ensemble tienne dans l'écran. */
+.map-zoom-inner {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    cursor: zoom-out;
+}
+.map-zoom-stage img { max-height: 76vh; }
+.map-zoom-inner .bg-minimap-caption { margin-top: 0; }

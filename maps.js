@@ -263,6 +263,20 @@ function bgMarqueursHtml(b) {
   }).join('');
 }
 
+/* La légende ne montre que les types réellement posés sur cette carte : une entrée
+   « Fontaine de soins » sur une carte qui n'en a pas ne renseignerait personne.
+   Ordonnée comme les groupes de la liste, et non selon l'ordre de saisie des points.
+   Produite une seule fois pour la fiche et pour l'agrandissement. */
+function bgLegendeHtml(b) {
+  const points = bgHotspotsOf(b);
+  const types = Object.keys(BG_HOTSPOT_TYPES)
+    .filter(k => points.some(h => bgHotspotTypeKey(h.type) === k));
+  if (!types.length) return '';
+  return `<div class="bg-hotspot-legend">${types.map(k =>
+    `<span class="bg-legend-item" data-type="${k}">${BG_HOTSPOT_TYPES[k].icon}${bgEsc(bgLoc(BG_HOTSPOT_TYPES[k].label))}</span>`
+  ).join('')}</div>`;
+}
+
 /* Le même contenu que les infobulles, mais en clair dans la page : lisible au doigt
    sans viser un marqueur de 32 pixels, parcourable au clavier, et présent dans le
    document pour qui cherche un camp par son nom. */
@@ -323,17 +337,7 @@ function renderBgDetail() {
 
   const points = bgHotspotsOf(b);
   const marqueursHtml = bgMarqueursHtml(b);
-  // La légende ne montre que les types réellement posés sur cette carte : une entrée
-  // "Fontaine de soins" sur une carte qui n'en a pas ne renseignerait personne.
-  // Ordonnés comme les groupes de la liste, et non selon l'ordre de saisie des points :
-  // légende et liste doivent se lire dans le même sens.
-  const typesPresents = Object.keys(BG_HOTSPOT_TYPES)
-    .filter(k => points.some(h => bgHotspotTypeKey(h.type) === k));
-  const legendeHtml = typesPresents.length
-    ? `<div class="bg-hotspot-legend">${typesPresents.map(k =>
-        `<span class="bg-legend-item" data-type="${k}">${BG_HOTSPOT_TYPES[k].icon}${bgEsc(bgLoc(BG_HOTSPOT_TYPES[k].label))}</span>`
-      ).join('')}</div>`
-    : '';
+  const legendeHtml = bgLegendeHtml(b);
   const indication = bgT(bgTactile ? 'hotspotHintTouch' : 'hotspotHint');
   const mentions = [bgEsc(bgT('minimap')) + ' — ' + bgEsc(bgLoc(b.name))];
   if (points.length) mentions.push(bgEsc(indication));
@@ -547,9 +551,13 @@ function bgOpenMapZoom() {
   if (!b || !b.minimapImage || !overlay) return;
   overlay.innerHTML = `
     <button class="map-zoom-close" type="button" aria-label="${bgEsc(bgT('closeZoom'))}">✕</button>
-    <div class="bg-minimap-stage map-zoom-stage">
-      <img src="${bgEsc(b.minimapImage)}" alt="${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}" />
-      ${bgMarqueursHtml(b)}
+    <div class="map-zoom-inner">
+      <div class="bg-minimap-stage map-zoom-stage">
+        <img src="${bgEsc(b.minimapImage)}" alt="${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}" />
+        ${bgMarqueursHtml(b)}
+      </div>
+      <div class="bg-minimap-caption">${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}</div>
+      ${bgLegendeHtml(b)}
     </div>`;
   overlay.classList.add('active');
   overlay.querySelector('.map-zoom-close').focus();
@@ -577,9 +585,11 @@ function bgCloseMapZoom() {
   const overlay = document.getElementById('mapZoomOverlay');
   if (!overlay) return;
   overlay.addEventListener('click', (e) => {
-    // Le fond et la croix ferment ; l'image et les marqueurs, non.
     if (e.target.closest('.bg-hotspot')) return;
-    if (e.target === overlay || e.target.closest('.map-zoom-close')) bgCloseMapZoom();
+    if (e.target.closest('.map-zoom-close')) { bgCloseMapZoom(); return; }
+    // Tout ce qui n'est pas l'image ferme : le fond, mais aussi la marge, le bandeau
+    // et la légende, qui ne sont pas interactifs.
+    if (!e.target.closest('.map-zoom-stage')) bgCloseMapZoom();
   });
 })();
 
