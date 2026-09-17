@@ -21,6 +21,10 @@ const BG_DICT = {
   // Deux formulations : au bureau l'infobulle suit le survol, au tactile il faut toucher.
   hotspotHint: { fr: "survole un point pour le détail", en: "hover a marker for details" },
   hotspotHintTouch: { fr: "touche un point pour le détail", en: "tap a marker for details" },
+  pointsList: { fr: "Points d'intérêt", en: "Points of interest" },
+  noPointsYet: { fr: "Aucun point posé sur cette carte pour le moment.", en: "No markers placed on this map yet." },
+  zoomHint: { fr: "clique la carte pour l'agrandir", en: "click the map to enlarge it" },
+  closeZoom: { fr: "Fermer l'agrandissement", en: "Close the enlarged map" },
 };
 
 const bgTactile = window.matchMedia('(hover: none), (pointer: coarse)').matches;
@@ -246,6 +250,44 @@ function bgOpenYoutubeForceApp(id) {
   window.location.href = fallbackUrl;
 }
 
+/* Les marqueurs sont produits par une seule fonction : la minimap de la fiche et son
+   agrandissement en affichent exactement les mêmes, aux mêmes pourcentages. */
+function bgMarqueursHtml(b) {
+  return bgHotspotsOf(b).map((h, i) => {
+    const t = bgHotspotType(h.type);
+    const titre = bgLoc(h.name) || bgLoc(t.label);
+    return `<button class="bg-hotspot" type="button" data-hotspot="${i}" data-type="${bgEsc(bgHotspotTypeKey(h.type))}"
+        style="left:${h.x}%;top:${h.y}%" title="${bgEsc(titre)}" aria-label="${bgEsc(titre)}">${t.icon}</button>`;
+  }).join('');
+}
+
+/* Le même contenu que les infobulles, mais en clair dans la page : lisible au doigt
+   sans viser un marqueur de 32 pixels, parcourable au clavier, et présent dans le
+   document pour qui cherche un camp par son nom. */
+function bgPointsListHtml(b) {
+  const points = bgHotspotsOf(b);
+  if (!points.length) return `<div class="empty-state">${bgT('noPointsYet')}</div>`;
+  return `<div class="point-list">${points.map((h, i) => {
+    const cle = bgHotspotTypeKey(h.type);
+    const t = BG_HOTSPOT_TYPES[cle];
+    const titre = bgLoc(h.name) || bgLoc(t.label);
+    const texte = bgLoc(h.description);
+    return `
+      <details class="point-row" data-point-row="${i}" data-type="${cle}">
+        <summary>
+          <span class="point-badge">${t.icon}</span>
+          <span class="point-name">${bgEsc(titre)}</span>
+          <span class="point-type">${bgEsc(bgLoc(t.label))}</span>
+          <span class="point-chevron" aria-hidden="true">▸</span>
+        </summary>
+        <div class="point-body">
+          ${texte ? `<p>${bgEsc(texte)}</p>` : ''}
+          ${h.image ? `<div class="point-shot"><img src="${bgEsc(h.image)}" alt="${bgEsc(titre)}" loading="lazy" onerror="this.parentNode.remove()" /></div>` : ''}
+        </div>
+      </details>`;
+  }).join('')}</div>`;
+}
+
 function renderBgDetail() {
   const b = bgCurrent();
   if (!b) {
@@ -261,12 +303,7 @@ function renderBgDetail() {
     : `<div class="empty-state">${bgT('noVideosYet')}</div>`;
 
   const points = bgHotspotsOf(b);
-  const marqueursHtml = points.map((h, i) => {
-    const t = bgHotspotType(h.type);
-    const titre = bgLoc(h.name) || bgLoc(t.label);
-    return `<button class="bg-hotspot" type="button" data-hotspot="${i}" data-type="${bgEsc(bgHotspotTypeKey(h.type))}"
-        style="left:${h.x}%;top:${h.y}%" title="${bgEsc(titre)}" aria-label="${bgEsc(titre)}">${t.icon}</button>`;
-  }).join('');
+  const marqueursHtml = bgMarqueursHtml(b);
   // La légende ne montre que les types réellement posés sur cette carte : une entrée
   // "Fontaine de soins" sur une carte qui n'en a pas ne renseignerait personne.
   const typesPresents = [...new Set(points.map(h => bgHotspotTypeKey(h.type)))];
@@ -276,16 +313,18 @@ function renderBgDetail() {
       ).join('')}</div>`
     : '';
   const indication = bgT(bgTactile ? 'hotspotHintTouch' : 'hotspotHint');
-  const legende = `${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}${points.length ? ' · ' + bgEsc(indication) : ''}`;
+  const mentions = [bgEsc(bgT('minimap')) + ' — ' + bgEsc(bgLoc(b.name))];
+  if (points.length) mentions.push(bgEsc(indication));
+  mentions.push(bgEsc(bgT('zoomHint')));
   const minimapHtml = b.minimapImage
     ? `<section class="bg-minimap-section">
         <div class="bg-minimap-frame">
-          <div class="bg-minimap-stage">
+          <div class="bg-minimap-stage is-zoomable">
             <img src="${bgEsc(b.minimapImage)}" alt="${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}" />
             ${marqueursHtml}
           </div>
         </div>
-        <div class="bg-minimap-caption">${legende}</div>
+        <div class="bg-minimap-caption">${mentions.join(' · ')}</div>
         ${legendeHtml}
       </section>`
     : '';
@@ -301,6 +340,12 @@ function renderBgDetail() {
       </div>
     </section>
     ${minimapHtml}
+    <section class="meta-grid one-col">
+      <article class="card">
+        <div class="card-head">${bgT('pointsList')}${points.length ? ` <span class="card-count">(${points.length})</span>` : ''}</div>
+        <div class="card-body">${bgPointsListHtml(b)}</div>
+      </article>
+    </section>
     <section class="meta-grid">
       <article class="card">
         <div class="card-head">${bgT('objectives')}</div>
@@ -411,7 +456,9 @@ function bgShowHotspotTip(declencheur) {
    n'y a pas de survol : le tap ouvre, un second tap sur le même point referme. */
 (function bindBgHotspotTips() {
   const tactile = window.matchMedia('(hover: none), (pointer: coarse)').matches;
-  const zone = bgEls.detailView;
+  // Délégation sur le document, et non sur la fiche seule : les mêmes marqueurs
+  // existent aussi dans l'agrandissement de la carte, qui vit hors de la fiche.
+  const zone = document;
 
   if (!tactile) {
     zone.addEventListener('mouseover', (e) => {
@@ -443,11 +490,71 @@ function bgShowHotspotTip(declencheur) {
     if (!e.target.closest('.bg-hotspot')) bgHideHotspotTip(true);
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') bgHideHotspotTip(true);
+    if (e.key !== 'Escape') return;
+    // Échap ferme d'abord l'agrandissement s'il est ouvert, la bulle sinon.
+    if (!bgCloseMapZoom()) bgHideHotspotTip(true);
   });
   window.addEventListener('resize', bgQueueHotspotTipPosition);
   window.addEventListener('scroll', bgQueueHotspotTipPosition, { passive: true, capture: true });
 })();
+
+/* ── Agrandissement de la carte ───────────────────────────────────────────
+   Les minimaps font 5 000 à 8 000 pixels de large et s'affichent sur huit cents :
+   le terrain y est illisible. Un clic ouvre l'image en grand, marqueurs compris —
+   ils sont posés en pourcentage, ils suivent donc l'agrandissement sans calcul. */
+function bgOpenMapZoom() {
+  const b = bgCurrent();
+  const overlay = document.getElementById('mapZoomOverlay');
+  if (!b || !b.minimapImage || !overlay) return;
+  overlay.innerHTML = `
+    <button class="map-zoom-close" type="button" aria-label="${bgEsc(bgT('closeZoom'))}">✕</button>
+    <div class="bg-minimap-stage map-zoom-stage">
+      <img src="${bgEsc(b.minimapImage)}" alt="${bgEsc(bgT('minimap'))} — ${bgEsc(bgLoc(b.name))}" />
+      ${bgMarqueursHtml(b)}
+    </div>`;
+  overlay.classList.add('active');
+  overlay.querySelector('.map-zoom-close').focus();
+}
+// Renvoie true si elle avait bien quelque chose à fermer, pour que Échap sache
+// s'il doit enchaîner sur l'infobulle.
+function bgCloseMapZoom() {
+  const overlay = document.getElementById('mapZoomOverlay');
+  if (!overlay || !overlay.classList.contains('active')) return false;
+  overlay.classList.remove('active');
+  overlay.innerHTML = '';
+  bgHideHotspotTip(true);
+  return true;
+}
+
+(function bindBgMapZoom() {
+  // Ouverture : un clic sur la carte de la fiche, mais pas sur un marqueur — celui-ci
+  // a déjà son rôle.
+  bgEls.detailView.addEventListener('click', (e) => {
+    if (e.target.closest('.bg-hotspot')) return;
+    if (!e.target.closest('.bg-minimap-stage.is-zoomable')) return;
+    bgOpenMapZoom();
+  });
+
+  const overlay = document.getElementById('mapZoomOverlay');
+  if (!overlay) return;
+  overlay.addEventListener('click', (e) => {
+    // Le fond et la croix ferment ; l'image et les marqueurs, non.
+    if (e.target.closest('.bg-hotspot')) return;
+    if (e.target === overlay || e.target.closest('.map-zoom-close')) bgCloseMapZoom();
+  });
+})();
+
+/* Ouvrir une entrée de la liste fait clignoter le marqueur correspondant : c'est ce
+   qui relie le texte à sa position sur la carte. L'événement toggle ne remonte pas,
+   d'où l'écoute en phase de capture. */
+bgEls.detailView.addEventListener('toggle', (e) => {
+  const ligne = e.target.closest && e.target.closest('.point-row');
+  if (!ligne || !ligne.open) return;
+  const m = bgEls.detailView.querySelector('.bg-hotspot[data-hotspot="' + ligne.dataset.pointRow + '"]');
+  if (!m) return;
+  m.classList.add('is-echo');
+  setTimeout(() => m.classList.remove('is-echo'), 1600);
+}, true);
 
 /* ── Adresse de la page ───────────────────────────────────────────────────
    Même mécanique que la page Builds : le fragment porte l'identifiant de la carte,

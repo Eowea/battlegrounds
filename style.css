@@ -2222,3 +2222,150 @@
     .bg-hotspot { width: 28px; height: 28px; }
     .bg-hotspot svg { width: 13px; height: 13px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LISTE DES POINTS ET AGRANDISSEMENT DE LA CARTE (page Cartes)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Liste des points sous la minimap ──
+   Le même contenu que les infobulles, mais en clair : atteignable au doigt sans
+   viser un marqueur de 32 pixels, parcourable au clavier, et présent dans le
+   document plutôt que réservé au survol. */
+.card-count { color: var(--text-dim); font-weight: 400; }
+
+.point-list { display: grid; gap: 8px; }
+
+.point-row[data-type="camp"]     { --pt-color: #ff9f43; }
+.point-row[data-type="objectif"] { --pt-color: var(--gold-bright); }
+.point-row[data-type="tour"]     { --pt-color: #6ec6ff; }
+.point-row[data-type="fontaine"] { --pt-color: #5fd48a; }
+.point-row[data-type="autre"]    { --pt-color: var(--blue); }
+
+.point-row {
+    border: 1px solid var(--blue-border);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 12, 20, .45);
+    overflow: hidden;
+    transition: border-color var(--t);
+}
+.point-row[open] { border-color: var(--gold-border); }
+.point-row > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    user-select: none;
+}
+.point-row > summary::-webkit-details-marker { display: none; }
+.point-row > summary:hover { background: var(--gold-soft); }
+.point-row > summary:focus-visible { outline: 2px solid var(--gold-border); outline-offset: -2px; }
+
+/* Même hexagone que les marqueurs de la carte, pour qu'on relie les deux d'un coup d'œil. */
+.point-badge {
+    position: relative;
+    flex: 0 0 auto;
+    width: 26px; height: 26px;
+    display: grid; place-items: center;
+    line-height: 0;
+    color: var(--pt-color, var(--blue));
+}
+.point-badge::before,
+.point-badge::after { content: ''; position: absolute; inset: 0; clip-path: var(--hex-clip); }
+.point-badge::before { background: var(--pt-color, var(--blue)); }
+.point-badge::after { background: #0c111b; transform: scale(.78); }
+.point-badge svg { position: relative; z-index: 1; width: 13px; height: 13px; }
+
+.point-name {
+    color: var(--text-bright);
+    font-size: 14px;
+    font-family: 'Metronic for Blizzard', 'Rajdhani', sans-serif;
+    min-width: 0;
+}
+.point-type {
+    margin-left: auto;
+    flex: 0 0 auto;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--pt-color, var(--text-dim));
+}
+.point-chevron { flex: 0 0 auto; color: var(--gold); font-size: 11px; transition: transform var(--t); }
+.point-row[open] .point-chevron { transform: rotate(90deg); }
+
+/* Le retrait aligne le texte sur le nom, pas sur la pastille. */
+.point-body { padding: 0 12px 12px 48px; }
+.point-body p { margin: 0 0 10px; color: var(--text-dim); font-size: 14px; line-height: 1.6; }
+.point-shot {
+    max-width: 420px;
+    border: 1px solid var(--blue-border);
+    border-radius: 2px;
+    overflow: hidden;
+    background: #000;
+    line-height: 0;
+}
+.point-shot img { display: block; width: 100%; height: auto; }
+
+/* Ouvrir une entrée fait clignoter son marqueur : c'est ce qui relie le texte au lieu. */
+@keyframes bg-hotspot-echo {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    35%      { transform: translate(-50%, -50%) scale(1.5); }
+}
+.bg-hotspot.is-echo {
+    animation: bg-hotspot-echo .5s ease-in-out 3;
+    z-index: 2;
+}
+@media (prefers-reduced-motion: reduce) {
+    /* Sans clignotement, on signale le point par un liseré doré le temps du repérage. */
+    .bg-hotspot.is-echo { animation: none; }
+    .bg-hotspot.is-echo::before { background: var(--gold-bright); }
+}
+
+/* ── Agrandissement de la minimap ──
+   Les images font 5 000 à 8 000 pixels de large pour huit cents à l'écran : sans
+   agrandissement, le terrain reste illisible. Les marqueurs étant posés en
+   pourcentage, ils suivent l'image sans le moindre recalcul. */
+.bg-minimap-stage.is-zoomable { cursor: zoom-in; }
+
+.map-zoom-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    /* Sous le portail des infobulles (30000), qui doit rester visible par-dessus. */
+    z-index: 9990;
+    padding: 24px;
+    place-items: center;
+    background: rgba(8, 12, 20, .94);
+    backdrop-filter: blur(10px);
+    cursor: zoom-out;
+}
+.map-zoom-overlay.active { display: grid; }
+
+.map-zoom-stage {
+    cursor: default;
+    max-width: 96vw;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .95);
+}
+/* Lève le plafond de hauteur de la minimap de fiche : tout l'intérêt est d'y voir plus grand. */
+.map-zoom-stage img { max-width: 96vw; max-height: 88vh; }
+
+.map-zoom-close {
+    position: fixed;
+    top: 16px; right: 20px;
+    width: 38px; height: 38px;
+    display: grid; place-items: center;
+    font-size: 15px;
+    border-radius: 50%;
+    border: 1px solid var(--blue-border);
+    background: rgba(8, 12, 20, .8);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all var(--t);
+}
+.map-zoom-close:hover { color: var(--gold-bright); border-color: var(--gold-border); }
+
+@media (max-width: 640px) {
+    .point-body { padding-left: 12px; }
+    .point-type { display: none; }
+}
