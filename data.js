@@ -293,7 +293,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "passe-alterac",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Passe d'Alterac",
       "en": "Alterac Pass"
@@ -423,7 +423,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "jardins-de-terreur",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Jardins de terreur",
       "en": "Garden of Terror"
@@ -530,7 +530,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "temple-hanamura",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Temple d'Hanamura",
       "en": "Hanamura Temple"
@@ -652,7 +652,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "fonderie-volskaya",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Fonderie Volskaya",
       "en": "Volskaya Foundry"
@@ -774,7 +774,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "tours-du-destin",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Tours du destin",
       "en": "Towers of Doom"
@@ -885,7 +885,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "sanctuaires-infernaux",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Sanctuaires infernaux",
       "en": "Infernal Shrines"
@@ -1149,7 +1149,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "tombe-reine-araignee",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Tombe de la reine araignée",
       "en": "Tomb of the Spider Queen"
@@ -1256,7 +1256,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "temple-celeste",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Temple céleste",
       "en": "Sky Temple"
@@ -1382,7 +1382,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "baie-coeur-noir",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Baie de Cœur-Noir",
       "en": "Blackheart's Bay"
@@ -1504,7 +1504,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "comte-du-dragon",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Comté du dragon",
       "en": "Dragon Shire"
@@ -1611,7 +1611,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "val-maudit",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Val maudit",
       "en": "Cursed Hollow"
@@ -1733,7 +1733,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "laboratoire-braxis",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Laboratoire de Braxis",
       "en": "Braxis Holdout"
@@ -1855,7 +1855,7 @@ const BATTLEGROUNDS = [
   },
   {
     "id": "menace-nucleaire",
-    "enabled": false,
+    "enabled": true,
     "name": {
       "fr": "Menace nucléaire",
       "en": "Warhead Junction"
