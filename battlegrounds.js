@@ -449,6 +449,56 @@ function bgShowHotspotTip(declencheur) {
   window.addEventListener('scroll', bgQueueHotspotTipPosition, { passive: true, capture: true });
 })();
 
+/* ── Adresse de la page ───────────────────────────────────────────────────
+   Même mécanique que la page Builds : le fragment porte l'identifiant de la carte,
+   posé en replaceState pour ne pas empiler une entrée d'historique à chaque clic.
+   Les identifiants sont déjà des noms lisibles, d'où des liens du genre
+   #comte-du-dragon, partageables tels quels. */
+function bgLooseHashEncode(str) {
+  // On n'échappe que ce qui casserait le fragment : espace, %, & et #.
+  return String(str).replace(/[%&#\s]/g, c => encodeURIComponent(c));
+}
+// Nom réduit à un identifiant d'URL : accents retirés, ligatures développées,
+// apostrophes supprimées plutôt que transformées en tiret (blackhearts-bay, pas
+// blackheart-s-bay), le reste rassemblé par des tirets.
+function bgSlugify(nom) {
+  return String(nom || '')
+    .replace(/[œŒ]/g, 'oe').replace(/[æÆ]/g, 'ae')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/['’]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+// Le fragment suit la langue affichée : un lecteur anglais partage #cursed-hollow,
+// un lecteur français #val-maudit. En français l'identifiant interne est déjà le slug
+// voulu ; en anglais on le dérive du nom.
+function bgHashFor(b) {
+  if (bgState.lang === 'en') return bgSlugify(b.name?.en) || b.id;
+  return b.id;
+}
+function bgUpdateHash() {
+  const b = bgCurrent();
+  // Sans carte sélectionnée, on retire le fragment plutôt que d'en laisser un mort.
+  if (!b) { history.replaceState(null, '', location.pathname + location.search); return; }
+  history.replaceState(null, '', '#' + bgLooseHashEncode(bgHashFor(b)));
+}
+function bgRestoreFromHash() {
+  const brut = (location.hash || '').replace(/^#/, '');
+  if (!brut) return false;
+  let cherche;
+  try { cherche = decodeURIComponent(brut).toLowerCase(); } catch (e) { return false; }
+  // Les deux langues sont acceptées en lecture : un lien anglais ouvre la bonne carte
+  // même chez un visiteur qui lit en français, et un ancien lien continue de marcher.
+  const b = BATTLEGROUNDS.find(x => x.enabled !== false && (
+    x.id.toLowerCase() === cherche ||
+    bgSlugify(x.name?.en) === cherche ||
+    bgSlugify(x.name?.fr) === cherche));
+  if (!b) return false;
+  bgState.bgId = b.id;
+  return true;
+}
+
 function renderBgAll() {
   document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === bgState.lang));
   bgEls.searchInput.placeholder = bgT('searchPlaceholder');
@@ -457,6 +507,7 @@ function renderBgAll() {
   renderBgHeader();
   renderBgList();
   renderBgDetail();
+  bgUpdateHash();
 }
 
 bgEls.bgList.addEventListener('click', (e) => {
@@ -500,4 +551,19 @@ if (bgBackToTopBtn) {
   bgBackToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 }
 
+// Un lien reçu avec un fragment ouvre directement la bonne fiche.
+bgRestoreFromHash();
 renderBgAll();
+
+// replaceState n'émet pas hashchange : seules les modifications venues de l'extérieur
+// arrivent ici — un lien collé dans la barre d'adresse, ou un retour vers la page.
+window.addEventListener('hashchange', () => {
+  if (!bgRestoreFromHash()) {
+    // Fragment inconnu : on remet l'adresse en accord avec ce qui est affiché, plutôt
+    // que de laisser dans la barre un lien qui ne mène pas à cette page.
+    bgUpdateHash();
+    return;
+  }
+  bgHideHotspotTip(true);
+  renderBgAll();
+});
