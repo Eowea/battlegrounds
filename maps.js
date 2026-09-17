@@ -36,13 +36,15 @@ const bgTactile = window.matchMedia('(hover: none), (pointer: coarse)').matches;
    Le type ne sert qu'à l'affichage — pastille, couleur, légende.
    ========================================================================= */
 const BG_HOTSPOT_TYPES = {
-  camp: {
-    label: { fr: "Camp de mercenaires", en: "Mercenary camp" },
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3 20h18L12 4z"/><path d="M12 4v16"/></svg>',
-  },
+  // L'ordre des clés est celui de la légende et des groupes de la liste : l'objectif
+  // définit la carte, il passe donc devant les camps.
   objectif: {
     label: { fr: "Objectif", en: "Objective" },
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>',
+  },
+  camp: {
+    label: { fr: "Camp de mercenaires", en: "Mercenary camp" },
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3 20h18L12 4z"/><path d="M12 4v16"/></svg>',
   },
   tour: {
     label: { fr: "Tour de guet", en: "Watch tower" },
@@ -267,25 +269,40 @@ function bgMarqueursHtml(b) {
 function bgPointsListHtml(b) {
   const points = bgHotspotsOf(b);
   if (!points.length) return `<div class="empty-state">${bgT('noPointsYet')}</div>`;
-  return `<div class="point-list">${points.map((h, i) => {
-    const cle = bgHotspotTypeKey(h.type);
-    const t = BG_HOTSPOT_TYPES[cle];
-    const titre = bgLoc(h.name) || bgLoc(t.label);
-    const texte = bgLoc(h.description);
-    return `
-      <details class="point-row" data-point-row="${i}" data-type="${cle}">
-        <summary>
-          <span class="point-badge">${t.icon}</span>
-          <span class="point-name">${bgEsc(titre)}</span>
-          <span class="point-type">${bgEsc(bgLoc(t.label))}</span>
-          <span class="point-chevron" aria-hidden="true">▸</span>
-        </summary>
-        <div class="point-body">
-          ${texte ? `<p>${bgEsc(texte)}</p>` : ''}
-          ${h.image ? `<div class="point-shot"><img src="${bgEsc(h.image)}" alt="${bgEsc(titre)}" loading="lazy" onerror="this.parentNode.remove()" /></div>` : ''}
-        </div>
-      </details>`;
-  }).join('')}</div>`;
+
+  // Regroupés par type, dans l'ordre de la légende. Repliée, la liste tient en trois ou
+  // quatre lignes au lieu d'une par point ; on n'ouvre que la famille qui intéresse.
+  // Et une seule ouverture suffit pour lire : le détail est dans le groupe, pas derrière
+  // un second dépli par point.
+  const groupes = Object.keys(BG_HOTSPOT_TYPES)
+    .map(cle => ({
+      cle,
+      t: BG_HOTSPOT_TYPES[cle],
+      items: points.map((h, i) => ({ h, i })).filter(({ h }) => bgHotspotTypeKey(h.type) === cle),
+    }))
+    .filter(g => g.items.length);
+
+  return `<div class="point-list">${groupes.map(g => `
+    <details class="point-group" data-type="${g.cle}">
+      <summary>
+        <span class="point-badge">${g.t.icon}</span>
+        <span class="point-group-name">${bgEsc(bgLoc(g.t.label))}</span>
+        <span class="point-group-count">${g.items.length}</span>
+        <span class="point-chevron" aria-hidden="true">▸</span>
+      </summary>
+      <div class="point-group-body">
+        ${g.items.map(({ h, i }) => {
+          const titre = bgLoc(h.name) || bgLoc(g.t.label);
+          const texte = bgLoc(h.description);
+          return `
+            <article class="point-item" data-point-row="${i}">
+              <h4 class="point-name">${bgEsc(titre)}</h4>
+              ${texte ? `<p>${bgEsc(texte)}</p>` : ''}
+              ${h.image ? `<div class="point-shot"><img src="${bgEsc(h.image)}" alt="${bgEsc(titre)}" loading="lazy" onerror="this.parentNode.remove()" /></div>` : ''}
+            </article>`;
+        }).join('')}
+      </div>
+    </details>`).join('')}</div>`;
 }
 
 function renderBgDetail() {
@@ -306,7 +323,10 @@ function renderBgDetail() {
   const marqueursHtml = bgMarqueursHtml(b);
   // La légende ne montre que les types réellement posés sur cette carte : une entrée
   // "Fontaine de soins" sur une carte qui n'en a pas ne renseignerait personne.
-  const typesPresents = [...new Set(points.map(h => bgHotspotTypeKey(h.type)))];
+  // Ordonnés comme les groupes de la liste, et non selon l'ordre de saisie des points :
+  // légende et liste doivent se lire dans le même sens.
+  const typesPresents = Object.keys(BG_HOTSPOT_TYPES)
+    .filter(k => points.some(h => bgHotspotTypeKey(h.type) === k));
   const legendeHtml = typesPresents.length
     ? `<div class="bg-hotspot-legend">${typesPresents.map(k =>
         `<span class="bg-legend-item" data-type="${k}">${BG_HOTSPOT_TYPES[k].icon}${bgEsc(bgLoc(BG_HOTSPOT_TYPES[k].label))}</span>`
@@ -544,17 +564,36 @@ function bgCloseMapZoom() {
   });
 })();
 
-/* Ouvrir une entrée de la liste fait clignoter le marqueur correspondant : c'est ce
-   qui relie le texte à sa position sur la carte. L'événement toggle ne remonte pas,
-   d'où l'écoute en phase de capture. */
-bgEls.detailView.addEventListener('toggle', (e) => {
-  const ligne = e.target.closest && e.target.closest('.point-row');
-  if (!ligne || !ligne.open) return;
-  const m = bgEls.detailView.querySelector('.bg-hotspot[data-hotspot="' + ligne.dataset.pointRow + '"]');
-  if (!m) return;
-  m.classList.add('is-echo');
-  setTimeout(() => m.classList.remove('is-echo'), 1600);
-}, true);
+/* Survoler un point de la liste allume son marqueur sur la carte : c'est ce qui relie
+   le texte à son emplacement, sans rien demander au lecteur. */
+(function bindBgPointEcho() {
+  let minuterie = null;
+  const marqueur = (el) => bgEls.detailView.querySelector('.bg-hotspot[data-hotspot="' + el.dataset.pointRow + '"]');
+  const eteindre = () => bgEls.detailView.querySelectorAll('.bg-hotspot.is-echo').forEach(m => m.classList.remove('is-echo'));
+
+  bgEls.detailView.addEventListener('mouseover', (e) => {
+    const item = e.target.closest('.point-item');
+    if (!item) return;
+    clearTimeout(minuterie);
+    eteindre();
+    const m = marqueur(item);
+    if (m) m.classList.add('is-echo');
+  });
+  bgEls.detailView.addEventListener('mouseout', (e) => {
+    if (e.target.closest('.point-item')) eteindre();
+  });
+  // Au tactile il n'y a pas de survol : un appui allume le marqueur le temps de le repérer.
+  bgEls.detailView.addEventListener('click', (e) => {
+    const item = e.target.closest('.point-item');
+    if (!item) return;
+    clearTimeout(minuterie);
+    eteindre();
+    const m = marqueur(item);
+    if (!m) return;
+    m.classList.add('is-echo');
+    minuterie = setTimeout(eteindre, 1600);
+  });
+})();
 
 /* ── Adresse de la page ───────────────────────────────────────────────────
    Même mécanique que la page Builds : le fragment porte l'identifiant de la carte,

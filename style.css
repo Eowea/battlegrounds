@@ -2228,41 +2228,44 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Liste des points sous la minimap ──
-   Le même contenu que les infobulles, mais en clair : atteignable au doigt sans
-   viser un marqueur de 32 pixels, parcourable au clavier, et présent dans le
-   document plutôt que réservé au survol. */
+   Le même contenu que les infobulles, mais en clair : atteignable au doigt sans viser
+   un marqueur de 32 pixels, parcourable au clavier, et présent dans le document plutôt
+   que réservé au survol.
+   Regroupée par type et repliée : trois ou quatre lignes au repos au lieu d'une par
+   point. Le détail vit dans le groupe, pas derrière un second dépli — une ouverture
+   suffit pour lire. */
 .card-count { color: var(--text-dim); font-weight: 400; }
 
 .point-list { display: grid; gap: 8px; }
 
-.point-row[data-type="camp"]     { --pt-color: #ff9f43; }
-.point-row[data-type="objectif"] { --pt-color: var(--gold-bright); }
-.point-row[data-type="tour"]     { --pt-color: #6ec6ff; }
-.point-row[data-type="fontaine"] { --pt-color: #5fd48a; }
-.point-row[data-type="autre"]    { --pt-color: var(--blue); }
+.point-group[data-type="camp"]     { --pt-color: #ff9f43; }
+.point-group[data-type="objectif"] { --pt-color: var(--gold-bright); }
+.point-group[data-type="tour"]     { --pt-color: #6ec6ff; }
+.point-group[data-type="fontaine"] { --pt-color: #5fd48a; }
+.point-group[data-type="autre"]    { --pt-color: var(--blue); }
 
-.point-row {
+.point-group {
     border: 1px solid var(--blue-border);
     border-radius: var(--radius-sm);
     background: rgba(8, 12, 20, .45);
     overflow: hidden;
     transition: border-color var(--t);
 }
-.point-row[open] { border-color: var(--gold-border); }
-.point-row > summary {
+.point-group[open] { border-color: var(--gold-border); }
+.point-group > summary {
     list-style: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
+    padding: 11px 12px;
     user-select: none;
 }
-.point-row > summary::-webkit-details-marker { display: none; }
-.point-row > summary:hover { background: var(--gold-soft); }
-.point-row > summary:focus-visible { outline: 2px solid var(--gold-border); outline-offset: -2px; }
+.point-group > summary::-webkit-details-marker { display: none; }
+.point-group > summary:hover { background: var(--gold-soft); }
+.point-group > summary:focus-visible { outline: 2px solid var(--gold-border); outline-offset: -2px; }
 
-/* Même hexagone que les marqueurs de la carte, pour qu'on relie les deux d'un coup d'œil. */
+/* Même hexagone que les marqueurs de la carte, pour relier les deux d'un coup d'œil. */
 .point-badge {
     position: relative;
     flex: 0 0 auto;
@@ -2277,28 +2280,54 @@
 .point-badge::after { background: #0c111b; transform: scale(.78); }
 .point-badge svg { position: relative; z-index: 1; width: 13px; height: 13px; }
 
-.point-name {
+.point-group-name {
     color: var(--text-bright);
     font-size: 14px;
     font-family: 'Metronic for Blizzard', 'Rajdhani', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .04em;
     min-width: 0;
 }
-.point-type {
+.point-group-count {
     margin-left: auto;
     flex: 0 0 auto;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .05em;
+    min-width: 24px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    border: 1px solid var(--pt-color, var(--blue-border));
     color: var(--pt-color, var(--text-dim));
+    font-size: 11px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
 }
 .point-chevron { flex: 0 0 auto; color: var(--gold); font-size: 11px; transition: transform var(--t); }
-.point-row[open] .point-chevron { transform: rotate(90deg); }
+.point-group[open] .point-chevron { transform: rotate(90deg); }
 
-/* Le retrait aligne le texte sur le nom, pas sur la pastille. */
-.point-body { padding: 0 12px 12px 48px; }
-.point-body p { margin: 0 0 10px; color: var(--text-dim); font-size: 14px; line-height: 1.6; }
+/* Deux colonnes dès qu'il y a la place : cinq camps tiennent alors en trois rangées
+   plutôt qu'en cinq. */
+.point-group-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px 20px;
+    padding: 14px 12px;
+    border-top: 1px solid var(--blue-border);
+}
+/* Le filet reprend la couleur du type : on sait à quoi on a affaire sans relire l'en-tête. */
+.point-item {
+    min-width: 0;
+    padding-left: 10px;
+    border-left: 2px solid var(--pt-color, var(--blue-border));
+}
+.point-item .point-name {
+    margin: 0 0 6px;
+    color: var(--text-bright);
+    font-size: 13px;
+    font-family: 'Metronic for Blizzard', 'Rajdhani', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.point-item p { margin: 0 0 8px; color: var(--text-dim); font-size: 14px; line-height: 1.6; }
 .point-shot {
-    max-width: 420px;
     border: 1px solid var(--blue-border);
     border-radius: 2px;
     overflow: hidden;
@@ -2307,20 +2336,14 @@
 }
 .point-shot img { display: block; width: 100%; height: auto; }
 
-/* Ouvrir une entrée fait clignoter son marqueur : c'est ce qui relie le texte au lieu. */
-@keyframes bg-hotspot-echo {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    35%      { transform: translate(-50%, -50%) scale(1.5); }
-}
+/* Survoler un point de la liste allume son marqueur sur la carte. */
 .bg-hotspot.is-echo {
-    animation: bg-hotspot-echo .5s ease-in-out 3;
+    animation: none;
+    transform: translate(-50%, -50%) scale(1.4);
     z-index: 2;
+    filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 10px var(--pt-glow, var(--blue-glow)));
 }
-@media (prefers-reduced-motion: reduce) {
-    /* Sans clignotement, on signale le point par un liseré doré le temps du repérage. */
-    .bg-hotspot.is-echo { animation: none; }
-    .bg-hotspot.is-echo::before { background: var(--gold-bright); }
-}
+.bg-hotspot.is-echo::before { background: var(--gold-bright); }
 
 /* ── Agrandissement de la minimap ──
    Les images font 5 000 à 8 000 pixels de large pour huit cents à l'écran : sans
@@ -2365,7 +2388,3 @@
 }
 .map-zoom-close:hover { color: var(--gold-bright); border-color: var(--gold-border); }
 
-@media (max-width: 640px) {
-    .point-body { padding-left: 12px; }
-    .point-type { display: none; }
-}
