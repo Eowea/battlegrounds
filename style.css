@@ -2308,15 +2308,32 @@
 .point-group-body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px 20px;
-    padding: 14px 12px;
+    gap: 10px 14px;
+    padding: 12px;
     border-top: 1px solid var(--blue-border);
 }
-/* Le filet reprend la couleur du type : on sait à quoi on a affaire sans relire l'en-tête. */
+/* Chaque point est un bloc à part : un simple filet ne suffisait pas à les séparer,
+   deux descriptions à la suite se lisaient comme un seul pavé. Le bord gauche reprend
+   la couleur du type, on sait à quoi on a affaire sans relire l'en-tête. */
 .point-item {
     min-width: 0;
-    padding-left: 10px;
-    border-left: 2px solid var(--pt-color, var(--blue-border));
+    padding: 11px 13px;
+    border: 1px solid var(--blue-border);
+    border-left: 3px solid var(--pt-color, var(--blue-border));
+    border-radius: var(--radius-sm);
+    background: rgba(8, 12, 20, .5);
+    /* Survoler allume le marqueur correspondant : le curseur doit l'annoncer. */
+    cursor: pointer;
+    transition: background var(--t), border-color var(--t), transform var(--t);
+}
+/* .is-echo est posé quand on survole le marqueur sur la carte : le lien joue dans
+   les deux sens, et le même habillage sert aux deux. */
+.point-item:hover,
+.point-item.is-echo {
+    background: var(--gold-soft);
+    border-color: var(--gold-border);
+    border-left-color: var(--pt-color, var(--gold-bright));
+    transform: translateX(3px);
 }
 .point-item .point-name {
     margin: 0 0 6px;
@@ -2336,14 +2353,25 @@
 }
 .point-shot img { display: block; width: 100%; height: auto; }
 
-/* Survoler un point de la liste allume son marqueur sur la carte. */
+/* Survoler un point de la liste allume son marqueur sur la carte. Il bat plutôt que de
+   seulement grossir : à 28 pixels sur une carte de 573, un agrandissement seul se
+   remarquait à peine. */
+@keyframes bg-hotspot-echo {
+    0%, 100% { transform: translate(-50%, -50%) scale(1.3); }
+    50%      { transform: translate(-50%, -50%) scale(1.65); }
+}
 .bg-hotspot.is-echo {
-    animation: none;
-    transform: translate(-50%, -50%) scale(1.4);
+    animation: bg-hotspot-echo .9s ease-in-out infinite;
     z-index: 2;
-    filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 10px var(--pt-glow, var(--blue-glow)));
+    filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 12px var(--gold-glow));
 }
 .bg-hotspot.is-echo::before { background: var(--gold-bright); }
+@media (prefers-reduced-motion: reduce) {
+    .bg-hotspot.is-echo {
+        animation: none;
+        transform: translate(-50%, -50%) scale(1.4);
+    }
+}
 
 /* ── Agrandissement de la minimap ──
    Les images font 5 000 à 8 000 pixels de large pour huit cents à l'écran : sans

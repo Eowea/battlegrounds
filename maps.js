@@ -401,12 +401,23 @@ let bgTipTrigger = null;
 let bgTipHideTimer = null;
 let bgTipRaf = 0;
 
+/* Le lien entre la carte et la liste joue dans les deux sens : survoler un marqueur
+   surligne son entrée, survoler une entrée allume son marqueur. Sans ça, on ne sait
+   pas lequel des onze points on est en train de lire. */
+function bgEchoListe(index) {
+  bgEls.detailView.querySelectorAll('.point-item.is-echo').forEach(e => e.classList.remove('is-echo'));
+  if (index == null) return;
+  const item = bgEls.detailView.querySelector('.point-item[data-point-row="' + index + '"]');
+  if (item) item.classList.add('is-echo');
+}
+
 function bgHideHotspotTip(immediat = false) {
   clearTimeout(bgTipHideTimer);
   const fermer = () => {
     bgEls.tooltipPortal.innerHTML = '';
     bgEls.tooltipPortal.setAttribute('aria-hidden', 'true');
     bgTipTrigger = null;
+    bgEchoListe(null);
   };
   // Le petit délai laisse passer un aller-retour de souris entre deux marqueurs
   // voisins sans faire clignoter la bulle.
@@ -452,6 +463,7 @@ function bgShowHotspotTip(declencheur) {
   if (!h) return;
 
   bgTipTrigger = declencheur;
+  bgEchoListe(declencheur.dataset.hotspot);
   const t = bgHotspotType(h.type);
   const titre = bgLoc(h.name) || bgLoc(t.label);
   const texte = bgLoc(h.description);
