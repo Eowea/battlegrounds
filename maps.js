@@ -500,7 +500,12 @@ function bgShowHotspotTip(declencheur) {
       if (m) bgShowHotspotTip(m);
     });
     zone.addEventListener('mouseout', (e) => {
-      if (e.target.closest('.bg-hotspot')) bgHideHotspotTip();
+      const m = e.target.closest('.bg-hotspot');
+      if (!m) return;
+      // Passer de l'icône au bord du bouton déclenche aussi mouseout : on ne ferme que
+      // si le curseur a réellement quitté le marqueur.
+      if (m.contains(e.relatedTarget)) return;
+      bgHideHotspotTip();
     });
     zone.addEventListener('focusin', (e) => {
       const m = e.target.closest('.bg-hotspot');
@@ -588,25 +593,37 @@ function bgCloseMapZoom() {
   bgEls.detailView.addEventListener('mouseover', (e) => {
     const item = e.target.closest('.point-item');
     if (!item) return;
+    const m = marqueur(item);
+    // Déjà allumé : on ne retouche à rien. Repasser la classe relancerait le battement
+    // depuis le début à chaque fois que le curseur passe du titre au texte.
+    if (!m || m.classList.contains('is-echo')) return;
     clearTimeout(minuterie);
     eteindre();
-    const m = marqueur(item);
-    if (m) m.classList.add('is-echo');
+    m.classList.add('is-echo');
   });
   bgEls.detailView.addEventListener('mouseout', (e) => {
-    if (e.target.closest('.point-item')) eteindre();
-  });
-  // Au tactile il n'y a pas de survol : un appui allume le marqueur le temps de le repérer.
-  bgEls.detailView.addEventListener('click', (e) => {
     const item = e.target.closest('.point-item');
     if (!item) return;
-    clearTimeout(minuterie);
+    // mouseout se déclenche aussi en passant d'un enfant à l'autre à l'intérieur du
+    // bloc. On n'éteint que si le curseur quitte réellement le bloc.
+    if (item.contains(e.relatedTarget)) return;
     eteindre();
-    const m = marqueur(item);
-    if (!m) return;
-    m.classList.add('is-echo');
-    minuterie = setTimeout(eteindre, 1600);
   });
+  // Au tactile il n'y a pas de survol : un appui allume le marqueur le temps de le
+  // repérer. Au bureau on ne branche rien — une minuterie éteindrait le marqueur alors
+  // que le curseur est toujours sur le point.
+  if (bgTactile) {
+    bgEls.detailView.addEventListener('click', (e) => {
+      const item = e.target.closest('.point-item');
+      if (!item) return;
+      clearTimeout(minuterie);
+      eteindre();
+      const m = marqueur(item);
+      if (!m) return;
+      m.classList.add('is-echo');
+      minuterie = setTimeout(eteindre, 1600);
+    });
+  }
 })();
 
 /* ── Adresse de la page ───────────────────────────────────────────────────
