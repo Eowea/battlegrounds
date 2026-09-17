@@ -2388,3 +2388,54 @@
 }
 .map-zoom-close:hover { color: var(--gold-bright); border-color: var(--gold-border); }
 
+
+/* ── La carte et ses points, côte à côte ──
+   Survoler un point allume son marqueur : encore faut-il voir les deux en même temps.
+   Empilés, le marqueur se retrouvait souvent hors de l'écran. La carte prend la plus
+   grande part — c'est elle qu'on lit —, la liste occupe la colonne de gauche. */
+.bg-map-row {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+    gap: 16px;
+    margin-bottom: 24px;
+    /* Hauteurs très différentes d'une carte à l'autre : chacune garde la sienne plutôt
+       que de creuser un vide dans l'autre. */
+    align-items: start;
+}
+/* Sans minimap, la liste reprend toute la largeur. */
+.bg-map-row.no-map { grid-template-columns: minmax(0, 1fr); }
+.bg-map-row > .bg-minimap-section { margin-bottom: 0; }
+
+/* La liste ne fait pas grandir la rangée indéfiniment : passé la hauteur maximale
+   d'une minimap, elle défile sur place et la carte reste en vue. */
+.bg-map-row .point-list {
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+/* Une seule colonne de points : la colonne de gauche est trop étroite pour deux. */
+.bg-map-row .point-group-body { grid-template-columns: minmax(0, 1fr); }
+
+@media (max-width: 1040px) {
+    .bg-map-row { grid-template-columns: minmax(0, 1fr); }
+    /* Empilés, la carte repasse devant : c'est l'ancrage visuel de la fiche. */
+    .bg-map-row > .bg-minimap-section { order: -1; margin-bottom: 16px; }
+    .bg-map-row .point-list { max-height: none; overflow-y: visible; }
+    .bg-map-row .point-group-body { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+}
+
+/* Ajustements propres à la disposition côte à côte : la carte est plus petite qu'en
+   pleine largeur, les repères y prenaient proportionnellement trop de place. */
+.bg-map-row .bg-hotspot { width: 28px; height: 28px; }
+.bg-map-row .bg-hotspot svg { width: 13px; height: 13px; }
+
+/* Dans une colonne de moins de 400 px, une capture par point transforme la liste en
+   colonne interminable. Elle reste accessible dans l'infobulle du marqueur — et
+   réapparaît plus bas, quand la liste occupe toute la largeur. */
+.bg-map-row .point-shot { display: none; }
+
+@media (max-width: 1040px) {
+    .bg-map-row .bg-hotspot { width: 32px; height: 32px; }
+    .bg-map-row .bg-hotspot svg { width: 15px; height: 15px; }
+    .bg-map-row .point-shot { display: block; }
+}

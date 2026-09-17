@@ -282,6 +282,8 @@ function bgPointsListHtml(b) {
     }))
     .filter(g => g.items.length);
 
+  // Tous les groupes repliés au départ : c'est ce qui garde la colonne compacte, et la
+  // hauteur de la rangée est alors donnée par la carte, pas par la liste.
   return `<div class="point-list">${groupes.map(g => `
     <details class="point-group" data-type="${g.cle}">
       <summary>
@@ -359,12 +361,12 @@ function renderBgDetail() {
         <p class="detail-headline">${bgEsc(bgLoc(b.headline))}</p>
       </div>
     </section>
-    ${minimapHtml}
-    <section class="meta-grid one-col">
+    <section class="bg-map-row${minimapHtml ? '' : ' no-map'}">
       <article class="card">
         <div class="card-head">${bgT('pointsList')}${points.length ? ` <span class="card-count">(${points.length})</span>` : ''}</div>
         <div class="card-body">${bgPointsListHtml(b)}</div>
       </article>
+      ${minimapHtml}
     </section>
     <section class="meta-grid">
       <article class="card">
