@@ -1547,64 +1547,169 @@ const BATTLEGROUNDS = [
     ],
     "hotspots": [
       {
-        "id": "pcom43",
+        "id": "pdrg1",
         "x": 12,
         "y": 12,
         "type": "objectif",
+        "image": "assets/maps/comte-du-dragon/captures/5.jpg",
         "name": {
-          "fr": "Sanctuaire",
-          "en": "Shrine"
+          "fr": "Sanctuaire du soleil",
+          "en": "Sun Shrine"
         },
         "description": {
-          "fr": "Deux sanctuaires, qu'il faut tenir en même temps pour activer la statue. Quatre secondes de capture s'il est neutre, huit s'il appartient à l'adversaire.",
-          "en": "Two Shrines, both to be held at once to activate the statue. Four seconds to capture if neutral, eight if the enemy owns it."
-        },
-        "image": ""
+          "fr": "L'un des deux sanctuaires à tenir. Quatre secondes pour le capturer s'il est neutre, huit s'il appartient à l'adversaire. Le tenir seul ne sert à rien : la statue ne s'active que si les deux sont à toi en même temps.",
+          "en": "One of the two Shrines to hold. Four seconds to capture if neutral, eight if the enemy owns it. Holding it alone achieves nothing: the statue only activates when both are yours at the same time."
+        }
       },
       {
-        "id": "pcom44",
+        "id": "pdrg2",
         "x": 26,
         "y": 12,
         "type": "objectif",
+        "image": "assets/maps/comte-du-dragon/captures/3.jpg",
+        "name": {
+          "fr": "Sanctuaire de la lune",
+          "en": "Moon Shrine"
+        },
+        "description": {
+          "fr": "Le second sanctuaire, mêmes règles que celui du soleil. C'est la simultanéité qui compte : perdre l'un pendant qu'on prend l'autre remet le compteur à zéro.",
+          "en": "The second Shrine, same rules as the Sun one. Simultaneity is what counts: losing one while taking the other puts you back to nothing."
+        }
+      },
+      {
+        "id": "pdrg3",
+        "x": 40,
+        "y": 12,
+        "type": "objectif",
+        "image": "assets/maps/comte-du-dragon/objectifs/2.jpg",
         "name": {
           "fr": "Statue du chevalier dragon",
           "en": "Dragon Knight's statue"
         },
         "description": {
-          "fr": "Au milieu de la carte. Une fois les deux sanctuaires tenus, un héros s'y rend et incarne le dragon pour 55 secondes, plus 2 par minute écoulée.",
-          "en": "At the centre of the map. With both Shrines held, a Hero walks up and becomes the Dragon for 55 seconds, plus 2 per minute elapsed."
-        },
-        "image": ""
+          "fr": "Au centre de la voie du milieu. Les deux sanctuaires tenus l'activent ; un héros s'y rend alors et incante trois secondes pour incarner le dragon. Il tient 55 secondes, plus 2 par minute de jeu écoulée. La statue redevient disponible deux minutes après la mort du chevalier.",
+          "en": "At the centre of the middle lane. Both Shrines held activate it; a Hero then walks up and channels for three seconds to become the Dragon. It lasts 55 seconds, plus 2 per minute of game time elapsed. The statue comes back two minutes after the Dragon Knight dies."
+        }
       },
       {
-        "id": "pcom45",
-        "x": 40,
-        "y": 12,
-        "type": "camp",
-        "name": {
-          "fr": "Camp de siège — géants",
-          "en": "Siege Camp — Giants"
-        },
-        "description": {
-          "fr": "Deux camps sur la voie du bas, deux géants chacun, 100 % de dégâts supplémentaires aux structures. Disponibles à 0:30, ils réapparaissent 3:00 après.",
-          "en": "Two camps on the bottom lane, two Giants each, 100% bonus damage to Structures. Available at 0:30, back 3:00 after."
-        },
-        "image": ""
-      },
-      {
-        "id": "pcom46",
+        "id": "pdrg4",
         "x": 54,
         "y": 12,
-        "type": "camp",
+        "type": "objectif",
+        "image": "assets/maps/comte-du-dragon/captures/4.jpg",
         "name": {
-          "fr": "Camp de bruisers — chevaliers",
-          "en": "Bruiser Camp — Knights"
+          "fr": "Chevalier dragon",
+          "en": "Dragon Knight"
         },
         "description": {
-          "fr": "Trois camps en tout : deux en haut, un en bas. Trois chevaliers et un sorcier qui pose un champ d'armure des sorts. Disponibles à 0:30, ils réapparaissent 4:00 après.",
-          "en": "Three camps in all: two at the top, one at the bottom. Three Knights and a Wizard who lays a Spell Armor field. Available at 0:30, back 4:00 after."
+          "fr": "Ce qui sort de la statue. Souffle de flammes toutes les 6 secondes, charge sauvage toutes les 10 — elle projette et frappe pour 450 points, plus 17 par minute. Il inflige 100 % de dégâts supplémentaires aux structures et aux serviteurs, encaisse 60 % de moins des structures, et explose à sa mort.",
+          "en": "What comes out of the statue. Flame Breath every 6 seconds, Savage Charge every 10 — it knocks back and hits for 450, plus 17 per minute. It deals 100% bonus damage to Structures and Minions, takes 60% less from Structures, and explodes when it dies."
+        }
+      },
+      {
+        "id": "pdrg5",
+        "x": 68,
+        "y": 12,
+        "type": "camp",
+        "image": "assets/maps/comte-du-dragon/captures/2.jpg",
+        "name": {
+          "fr": "Camp de bruisers — haut, côté bleu",
+          "en": "Bruiser Camp — top, blue side"
         },
-        "image": ""
+        "description": {
+          "fr": "Trois chevaliers et un sorcier. Le sorcier pose un champ d'armure des sorts qui réduit les dégâts subis par les unités proches. Disponible à 0:30, il réapparaît 4:00 après avoir été pris. À capturer vers 1:30 pour qu'il arrive en ligne avec la vague.",
+          "en": "Three Knights and a Wizard. The Wizard lays a Spell Armor field that cuts the damage nearby units take. Available at 0:30, back 4:00 after being taken. Worth capturing around 1:30 so it reaches the lane with the wave."
+        }
+      },
+      {
+        "id": "pdrg6",
+        "x": 82,
+        "y": 12,
+        "type": "camp",
+        "image": "assets/maps/comte-du-dragon/captures/2.jpg",
+        "name": {
+          "fr": "Camp de bruisers — haut, côté rouge",
+          "en": "Bruiser Camp — top, red side"
+        },
+        "description": {
+          "fr": "Le symétrique du camp d'en face, même composition. Sur cette carte les bruisers sont en haut et le siège en bas : la voie du haut se dispute donc plus longtemps.",
+          "en": "The mirror of the camp opposite, same composition. On this map the Bruisers sit at the top and the Siege camps at the bottom: the top lane is contested longer as a result."
+        }
+      },
+      {
+        "id": "pdrg7",
+        "x": 12,
+        "y": 26,
+        "type": "camp",
+        "image": "assets/maps/comte-du-dragon/captures/2.jpg",
+        "name": {
+          "fr": "Camp de bruisers — bas",
+          "en": "Bruiser Camp — bottom"
+        },
+        "description": {
+          "fr": "Le cinquième camp de la carte, seul de son espèce en bas. Trois chevaliers et un sorcier, comme ceux du haut. Disponible à 0:30, il réapparaît 4:00 après.",
+          "en": "The map's fifth camp, the only one of its kind at the bottom. Three Knights and a Wizard, like those at the top. Available at 0:30, back 4:00 after."
+        }
+      },
+      {
+        "id": "pdrg8",
+        "x": 26,
+        "y": 26,
+        "type": "camp",
+        "image": "",
+        "name": {
+          "fr": "Camp de siège — bas, côté bleu",
+          "en": "Siege Camp — bottom, blue side"
+        },
+        "description": {
+          "fr": "Deux géants de siège. Leurs rochers sont esquivables, et ils infligent 100 % de dégâts supplémentaires aux structures. Disponible à 0:30, il réapparaît 3:00 après. À prendre vers 0:42 pour qu'il parte avec la vague.",
+          "en": "Two Siege Giants. Their stones are dodgeable, and they deal 100% bonus damage to Structures. Available at 0:30, back 3:00 after. Worth taking around 0:42 so it leaves with the wave."
+        }
+      },
+      {
+        "id": "pdrg9",
+        "x": 40,
+        "y": 26,
+        "type": "camp",
+        "image": "",
+        "name": {
+          "fr": "Camp de siège — bas, côté rouge",
+          "en": "Siege Camp — bottom, red side"
+        },
+        "description": {
+          "fr": "Le symétrique du précédent, même composition. Les deux camps de siège sont sur la voie du bas, à l'opposé des bruisers.",
+          "en": "The mirror of the previous one, same composition. Both Siege camps sit on the bottom lane, opposite the Bruisers."
+        }
+      },
+      {
+        "id": "pdrg10",
+        "x": 54,
+        "y": 26,
+        "type": "fontaine",
+        "image": "",
+        "name": {
+          "fr": "Fontaine de soins — côté bleu",
+          "en": "Healing fountain — blue side"
+        },
+        "description": {
+          "fr": "Deux minutes de recharge. L'objectif revenant deux minutes après la mort du dragon, la fontaine se dépense dès qu'elle est prête plutôt que d'être gardée : elle sera de nouveau là au moment voulu.",
+          "en": "Two-minute cooldown. With the objective back two minutes after the Dragon dies, spend the fountain as soon as it is up rather than saving it: it will be there again when it matters."
+        }
+      },
+      {
+        "id": "pdrg11",
+        "x": 68,
+        "y": 26,
+        "type": "fontaine",
+        "image": "",
+        "name": {
+          "fr": "Fontaine de soins — côté rouge",
+          "en": "Healing fountain — red side"
+        },
+        "description": {
+          "fr": "La fontaine adverse. Savoir si elle est disponible change la valeur d'un plongeon dans leur base autant que leurs points de vie restants.",
+          "en": "The enemy fountain. Knowing whether it is up changes the worth of diving their base as much as their remaining health does."
+        }
       }
     ],
     "guideVideos": []
